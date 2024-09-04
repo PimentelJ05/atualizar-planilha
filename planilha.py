@@ -3,7 +3,7 @@ import json
 import requests
 import gspread
 from google.oauth2.service_account import Credentials
-from fuzzywuzzy import process  # Se ainda precisar comparar strings parcialmente
+from fuzzywuzzy import process
 
 # Lendo as credenciais do secret do GitHub Actions
 credentials_json = os.environ.get("GOOGLE_CREDENTIALS")
@@ -26,6 +26,10 @@ planilha_id = '1-_lGGdU1gH_IkehJrUPydfQ_KxW3J_R9rAS-5dLyGFA'
 spreadsheet = client.open_by_key(planilha_id)
 worksheet = spreadsheet.sheet1
 
+# Função para normalizar os telefones (remover espaços, traços, etc.)
+def normalizar_telefone(telefone):
+    return ''.join(filter(str.isdigit, telefone))  # Mantém apenas números
+
 # Função para obter os telefones e IDs dos clientes do Kommo
 def obter_telefones_ids_clientes():
     api_url = 'https://creditoessencial.kommo.com/api/v4/contacts'
@@ -37,8 +41,16 @@ def obter_telefones_ids_clientes():
 
     if response.status_code == 200:
         contacts = response.json()['_embedded']['contacts']
-        # Criar um dicionário com Telefone como chave e ID como valor
-        clientes = {contact.get('custom_fields', {}).get('phone', ''): contact['id'] for contact in contacts}
+        clientes = {}
+        for contact in contacts:
+            # Acessa os telefones corretamente; ajuste conforme a estrutura real dos dados
+            telefones = contact.get('custom_fields_values', [])
+            for campo in telefones:
+                if campo.get('field_code') == 'PHONE':
+                    for telefone in campo.get('values', []):
+                        telefone_normalizado = normalizar_telefone(telefone.get('value', ''))
+                        if telefone_normalizado:
+                            clientes[telefone_normalizado] = contact['id']
         print("Clientes obtidos do Kommo:", clientes)  # Verificar os clientes
         return clientes
     else:
@@ -81,7 +93,7 @@ def obter_todos_pedidos():
 def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
     lista_pedidos = []
     for pedido in pedidos:
-        telefone_cliente_pedido = pedido.get('to', {}).get('phone', 'N/A')  # Telefone do cliente no pedido
+        telefone_cliente_pedido = normalizar_telefone(pedido.get('to', {}).get('phone', ''))  # Telefone do cliente no pedido
         id_cliente = clientes.get(telefone_cliente_pedido)  # Buscar o ID do cliente pelo telefone
         if id_cliente:  # Se o ID for encontrado
             lista_pedidos.append([
