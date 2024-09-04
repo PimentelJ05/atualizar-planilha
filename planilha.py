@@ -37,7 +37,9 @@ def obter_nomes_ids_clientes():
     if response.status_code == 200:
         contacts = response.json()['_embedded']['contacts']
         # Criar um dicionário com ID como chave e Nome como valor
-        return {contact['id']: contact['name'] for contact in contacts}
+        clientes = {contact['id']: contact['name'] for contact in contacts}
+        print("Clientes obtidos:", clientes)  # Verificar os clientes
+        return clientes
     else:
         print(f"Erro ao obter contatos: {response.status_code} - {response.text}")
         return {}
@@ -71,22 +73,24 @@ def obter_todos_pedidos():
         todos_pedidos.extend(pedidos)
         pagina += 1
 
+    print("Pedidos obtidos:", todos_pedidos)  # Verificar os pedidos
     return todos_pedidos
 
 # Função para atualizar a planilha com os dados dos clientes e pedidos
 def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
     lista_pedidos = []
     for pedido in pedidos:
-        id_cliente = pedido.get('to', {}).get('id')
+        # Verificar o local correto do ID do cliente
+        id_cliente = pedido.get('buyer', {}).get('id')  # Ajuste conforme a estrutura correta
         nome_cliente = clientes.get(id_cliente, 'N/A')  # Obter o nome do cliente usando o ID
         lista_pedidos.append([
-            id_cliente,                                  # ID do Cliente
-            nome_cliente,                               # Nome do Cliente
-            pedido.get('id', 'N/A'),                    # ID do Pedido
-            pedido.get('status', 'N/A'),                # Status do Pedido
+            id_cliente or 'N/A',                      # ID do Cliente
+            nome_cliente,                             # Nome do Cliente
+            pedido.get('id', 'N/A'),                  # ID do Pedido
+            pedido.get('status', 'N/A'),              # Status do Pedido
             pedido.get('service', {}).get('company', {}).get('name', 'N/A'),  # Transportadora
-            pedido.get('updated_at', 'N/A'),            # Data de Atualização
-            pedido.get('to', {}).get('phone', 'N/A')    # Telefone do Cliente
+            pedido.get('updated_at', 'N/A'),          # Data de Atualização
+            pedido.get('to', {}).get('phone', 'N/A')  # Telefone do Cliente
         ])
 
     # Adicionar cabeçalhos e limpar dados existentes
@@ -103,3 +107,4 @@ if pedidos and clientes:
     print("Planilha atualizada com sucesso!")
 else:
     print("Nenhum pedido ou cliente encontrado para salvar.")
+
