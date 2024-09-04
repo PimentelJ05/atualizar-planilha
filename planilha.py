@@ -86,23 +86,29 @@ def encontrar_nome_semelhante(nome_cliente_pedido, clientes):
         return nome_correspondente
     return None
 
-# Função para atualizar a planilha com os dados dos clientes e pedidos
+# Função para atualizar a planilha com os dados dos clientes e pedidos, evitando duplicatas
 def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
     lista_pedidos = []
+    ids_adicionados = set()  # Conjunto para rastrear IDs de pedidos adicionados
+    
     for pedido in pedidos:
         nome_cliente_pedido = pedido.get('to', {}).get('name', 'N/A')  # Nome do cliente no pedido
         nome_correspondente = encontrar_nome_semelhante(nome_cliente_pedido, clientes)  # Encontrar o nome correspondente
         if nome_correspondente:
             id_cliente = clientes[nome_correspondente]
-            lista_pedidos.append([
-                id_cliente,                                # ID do Cliente do Kommo
-                nome_correspondente,                      # Nome do Cliente
-                pedido.get('id', 'N/A'),                   # ID do Pedido
-                pedido.get('status', 'N/A'),               # Status do Pedido
-                pedido.get('service', {}).get('company', {}).get('name', 'N/A'),  # Transportadora
-                pedido.get('updated_at', 'N/A'),           # Data de Atualização
-                pedido.get('to', {}).get('phone', 'N/A')   # Telefone do Cliente
-            ])
+            id_pedido = pedido.get('id', 'N/A')
+            # Verificar se o ID do pedido já foi adicionado
+            if id_pedido not in ids_adicionados:
+                lista_pedidos.append([
+                    id_cliente,                                # ID do Cliente do Kommo
+                    nome_correspondente,                      # Nome do Cliente
+                    id_pedido,                                # ID do Pedido
+                    pedido.get('status', 'N/A'),              # Status do Pedido
+                    pedido.get('service', {}).get('company', {}).get('name', 'N/A'),  # Transportadora
+                    pedido.get('updated_at', 'N/A'),          # Data de Atualização
+                    pedido.get('to', {}).get('phone', 'N/A')  # Telefone do Cliente
+                ])
+                ids_adicionados.add(id_pedido)  # Adicionar o ID do pedido ao conjunto
         else:
             print(f"Nome {nome_cliente_pedido} não encontrado ou não suficientemente próximo no Kommo.")
 
