@@ -11,10 +11,10 @@ jobs:
 
     steps:
     - name: Checkout do código
-      uses: actions/checkout@v3  # Atualize para a versão mais recente
+      uses: actions/checkout@v3
 
     - name: Configurar Python
-      uses: actions/setup-python@v4  # Atualize para a versão mais recente
+      uses: actions/setup-python@v4
       with:
         python-version: '3.x'
 
@@ -23,5 +23,7 @@ jobs:
         pip install -r requirements.txt
 
     - name: Executar script
+      env:
+        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
       run: |
         python planilha.py
