@@ -3,7 +3,6 @@ import json
 import requests
 import gspread
 from google.oauth2.service_account import Credentials
-from fuzzywuzzy import process
 
 # Lendo as credenciais do secret do GitHub Actions
 credentials_json = os.environ.get("GOOGLE_CREDENTIALS")
@@ -43,14 +42,16 @@ def obter_telefones_ids_clientes():
         contacts = response.json()['_embedded']['contacts']
         clientes = {}
         for contact in contacts:
-            # Acessa os telefones corretamente; ajuste conforme a estrutura real dos dados
             telefones = contact.get('custom_fields_values', [])
             for campo in telefones:
                 if campo.get('field_code') == 'PHONE':
                     for telefone in campo.get('values', []):
                         telefone_normalizado = normalizar_telefone(telefone.get('value', ''))
                         if telefone_normalizado:
-                            clientes[telefone_normalizado] = contact['id']
+                            clientes[telefone_normalizado] = {
+                                'id': contact['id'],
+                                'name': contact['name']
+                            }
         print("Clientes obtidos do Kommo:", clientes)  # Verificar os clientes
         return clientes
     else:
@@ -86,7 +87,7 @@ def obter_todos_pedidos():
         todos_pedidos.extend(pedidos)
         pagina += 1
 
-    print("Pedidos obtidos do Melhor Envio:", pedidos)  # Verificar os pedidos
+    print("Pedidos obtidos do Melhor Envio:", todos_pedidos)  # Verificar os pedidos
     return todos_pedidos
 
 # Função para atualizar a planilha com os dados dos clientes e pedidos
@@ -94,16 +95,17 @@ def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
     lista_pedidos = []
     for pedido in pedidos:
         telefone_cliente_pedido = normalizar_telefone(pedido.get('to', {}).get('phone', ''))  # Telefone do cliente no pedido
-        id_cliente = clientes.get(telefone_cliente_pedido)  # Buscar o ID do cliente pelo telefone
-        if id_cliente:  # Se o ID for encontrado
+        print(f"Telefone do Pedido: {telefone_cliente_pedido}")  # Verificar o telefone do pedido
+        cliente_info = clientes.get(telefone_cliente_pedido)  # Buscar o ID do cliente pelo telefone
+        if cliente_info:  # Se o cliente for encontrado
             lista_pedidos.append([
-                id_cliente,                                # ID do Cliente do Kommo
-                pedido.get('to', {}).get('name', 'N/A'),  # Nome do Cliente
-                pedido.get('id', 'N/A'),                   # ID do Pedido
-                pedido.get('status', 'N/A'),               # Status do Pedido
+                cliente_info['id'],                          # ID do Cliente do Kommo
+                cliente_info['name'],                        # Nome do Cliente do Kommo
+                pedido.get('id', 'N/A'),                     # ID do Pedido
+                pedido.get('status', 'N/A'),                 # Status do Pedido
                 pedido.get('service', {}).get('company', {}).get('name', 'N/A'),  # Transportadora
-                pedido.get('updated_at', 'N/A'),           # Data de Atualização
-                telefone_cliente_pedido                    # Telefone do Cliente
+                pedido.get('updated_at', 'N/A'),             # Data de Atualização
+                telefone_cliente_pedido                      # Telefone do Cliente
             ])
         else:
             print(f"Telefone {telefone_cliente_pedido} não encontrado no Kommo.")
