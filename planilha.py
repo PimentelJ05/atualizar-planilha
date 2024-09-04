@@ -3,6 +3,7 @@ import json
 import requests
 import gspread
 from google.oauth2.service_account import Credentials
+from fuzzywuzzy import process
 
 # Lendo as credenciais do secret do GitHub Actions
 credentials_json = os.environ.get("GOOGLE_CREDENTIALS")
@@ -29,16 +30,16 @@ worksheet = spreadsheet.sheet1
 def obter_nomes_ids_clientes():
     api_url = 'https://creditoessencial.kommo.com/api/v4/contacts'
     headers = {
-        'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6ImM0YWU0ZDkzNjkxYjI1NzA3MmZlNzQwMjNjMWUzYjdhMzg3NjY1MWRhM2UyNGUwYjFkYTBkYzQyN2Q1NDZmNjYyNWZmYTdlNGVmZTk3NzUzIn0.eyJhdWQiOiIyYmFjMWY2OC1jMjA0LTQ3MmEtYWRmZS0wNjMwYTI1OTJjZDQiLCJqdGkiOiJjNGFlNGQ5MzY5MWIyNTcwNzJmZTc0MDIzYzFlM2I3YTM4NzY2NTFkYTNlMjRlMGIxZGEwZGM0MjdkNTQ2ZjY2MjVmZmE3ZTRlZmU5Nzc1MyIsImlhdCI6MTcyNTI5MzExNSwibmJmIjoxNzI1MjkzMTE1LCJleHAiOjE3OTg3NjE2MDAsInN1YiI6IjEwNDY2MDM1IiwiZ3JhbnRfdHlwZSI6IiIsImFjY291bnRfaWQiOjMyMDYxNDU1LCJiYXNlX2RvbWFpbiI6ImtvbW1vLmNvbSIsInZlcnNpb24iOjIsInNjb3BlcyI6WyJjcm0iLCJmaWxlcyIsImZpbGVzX2RlbGV0ZSIsIm5vdGlmaWNhdGlvbnMiLCJwdXNoX25vdGlmaWNhdGlvbnMiXSwiaGFzaF91dWlkIjoiZTRmZWYxMDgtODViZi00ZmY0LTllOWYtMGRmZDAwNWYzNWJlIiwiYXBpX2RvbWFpbiI6ImFwaS1nLmtvbW1vLmNvbSJ9.rW4oG9BwkoTSdLi6DLFlCiL0wE8tMPN5dBnNAZtnQYGjdOe1kSKx4fU2s3Tm8vrHF0aI7_1YlubA85ty4uhsh4x_1IGC9593zmOKN-Z2nkK0qSaX0ANQwTNST5XjuhF03FcLEpnqJSb-bjPW-U15vg2SIwR0qezbrPuJMKtjFdiGNwWQW3Jjx2VogZzRQuuRXA30VT8bdDtzySnSQnG0NIb8wGie9QYsZPcYT3c4HQVlPHL8sr9OPhNujTi7YTpiCDnrwDQvO4JBt0CstD78X_Snf4bGQfSOUa8KoAX9DkrHz8-LDkhGc6O1Rwq92iZk6nANI34a8SVyz2oVXwntTw'  # Substitua pelo seu token do Kommo
+        'Authorization': 'Bearer SEU_TOKEN_KOMMO'  # Substitua pelo seu token do Kommo
     }
     
     response = requests.get(api_url, headers=headers)
 
     if response.status_code == 200:
         contacts = response.json()['_embedded']['contacts']
-        # Criar um dicionário com ID como chave e Nome como valor
-        clientes = {contact['id']: contact['name'] for contact in contacts}
-        print("Clientes obtidos:", clientes)  # Verificar os clientes
+        # Criar um dicionário com Nome como chave e ID como valor
+        clientes = {contact['name']: contact['id'] for contact in contacts}
+        print("Clientes obtidos do Kommo:", clientes)  # Verificar os clientes
         return clientes
     else:
         print(f"Erro ao obter contatos: {response.status_code} - {response.text}")
@@ -50,7 +51,7 @@ def obter_todos_pedidos():
     headers = {
         "Accept": "application/json",
         "Content-Type": "application/json",
-        "Authorization": "Bearer  eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxNTg5NyIsImp0aSI6IjcyOGFjN2U2MDJmNDM1ZjE4YWJmY2ZjOWI2OTU0Nzk5MDgwMzI2OTE5YmMyNzQ2ZjMxYmZmMGY1OWYzZGE0M2Q1NjMyYWRkMzRkZThiNGU2IiwiaWF0IjoxNzI1MDI3ODAxLjA5NzQ3NiwibmJmIjoxNzI1MDI3ODAxLjA5NzQ3OCwiZXhwIjoxNzI3NjE5ODAxLjA1NTUzMywic3ViIjoiOWM3MzFiZjUtMDk4Yi00MWIzLWJjNzMtYmNjMWI5ZDcxYWQwIiwic2NvcGVzIjpbImNhcnQtcmVhZCIsImNhcnQtd3JpdGUiLCJjb21wYW5pZXMtcmVhZCIsImNvbXBhbmllcy13cml0ZSIsImNvdXBvbnMtcmVhZCIsImNvdXBvbnMtd3JpdGUiLCJub3RpZmljYXRpb25zLXJlYWQiLCJvcmRlcnMtcmVhZCIsInByb2R1Y3RzLXJlYWQiLCJwcm9kdWN0cy13cml0ZSIsInB1cmNoYXNlcy1yZWFkIiwic2hpcHBpbmctY2FsY3VsYXRlIiwic2hpcHBpbmctY2FuY2VsIiwic2hpcHBpbmctY2hlY2tvdXQiLCJzaGlwcGluZy1jb21wYW5pZXMiLCJzaGlwcGluZy1nZW5lcmF0ZSIsInNoaXBwaW5nLXByZXZpZXciLCJzaGlwcGluZy1wcmludCIsInNoaXBwaW5nLXNoYXJlIiwic2hpcHBpbmctdHJhY2tpbmciLCJlY29tbWVyY2Utc2hpcHBpbmciLCJ0cmFuc2FjdGlvbnMtcmVhZCIsInVzZXJzLXJlYWQiLCJ1c2Vycy13cml0ZSJdfQ.2uIiaMclQhDERAaQ_qSIShaS1j1UcM-RHrL23H21xk9v0u7M3kvvc4EKQi7U5cnUzi_-2IkJsnr4J7iF04j7ZmxZfmySvH6ttbnFDI6csThrZSw7NanibXIbRnrrAZ6_LmbSk61dj-M12KbPS7OaaMHYYsut04MjowixYlRPDlVHo7bglajHN_fRxTjlGPKIIltevnwtdXkHiIVvEhxavYQvo5PQTs-w6zMmqCAllYWxCJQAyQdtGIJaDoc-zpQEr2XWKIoy4aFmwA_W7fKDXayiPni-K_3J0hvr2wn6p1V-REHqJJ9Wg_RzswU6tL7trArFOghaR05TEYTq1fcLpz99ZjPyX7ES3VfGGXcNwmTzuo-0IWQOmman9_hTjL_YXO_uH-UL9C1p8KQRKVT7qQ2hG1JvzLvuZoOPIO4WKbFso1M4eKyool2_kKjnyKeUDDR1MHfCu_Elt9g_Oo-psHeK9ecubPIq1vjt_gNqKGNjIZidXpc3zmSjNNcQ7_ihVtXkOm0rZ5nw9PC4oFGic_Dj31KjaXawHgttp7tNZpV-LL8P3Zh2u7A6Oggayeaz4WtDTtzgJe1Le9lpGjhpED2xpTHlLmSiFmf0DQ1lqQ5O74aYQg4zY-yhMrgKcjxdHBfsZlixFbOD_O-iZ_roZqdw2Nk1r5Fwow0VIU4tkBM",  # Substitua pelo seu token do Melhor Envio
+        "Authorization": "Bearer SEU_TOKEN_MELHOR_ENVIO",  # Substitua pelo seu token do Melhor Envio
         "User-Agent": "Planilha Crédito Essencial (julia.pimentel@creditoessencial.com.br)"
     }
     todos_pedidos = []
@@ -73,25 +74,37 @@ def obter_todos_pedidos():
         todos_pedidos.extend(pedidos)
         pagina += 1
 
-    print("Pedidos obtidos:", todos_pedidos)  # Verificar os pedidos
+    print("Pedidos obtidos do Melhor Envio:", pedidos)  # Verificar os pedidos
     return todos_pedidos
+
+# Função para encontrar o nome mais próximo usando fuzzy matching
+def encontrar_nome_semelhante(nome_cliente_pedido, clientes):
+    nomes_kommo = list(clientes.keys())
+    nome_correspondente, pontuacao = process.extractOne(nome_cliente_pedido, nomes_kommo)
+    # Considera uma correspondência válida se a pontuação for alta o suficiente (ex: > 80)
+    if pontuacao > 80:
+        return nome_correspondente
+    return None
 
 # Função para atualizar a planilha com os dados dos clientes e pedidos
 def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
     lista_pedidos = []
     for pedido in pedidos:
-        # Verificar o local correto do ID do cliente
-        id_cliente = pedido.get('buyer', {}).get('id')  # Ajuste conforme a estrutura correta
-        nome_cliente = clientes.get(id_cliente, 'N/A')  # Obter o nome do cliente usando o ID
-        lista_pedidos.append([
-            id_cliente or 'N/A',                      # ID do Cliente
-            nome_cliente,                             # Nome do Cliente
-            pedido.get('id', 'N/A'),                  # ID do Pedido
-            pedido.get('status', 'N/A'),              # Status do Pedido
-            pedido.get('service', {}).get('company', {}).get('name', 'N/A'),  # Transportadora
-            pedido.get('updated_at', 'N/A'),          # Data de Atualização
-            pedido.get('to', {}).get('phone', 'N/A')  # Telefone do Cliente
-        ])
+        nome_cliente_pedido = pedido.get('to', {}).get('name', 'N/A')  # Nome do cliente no pedido
+        nome_correspondente = encontrar_nome_semelhante(nome_cliente_pedido, clientes)  # Encontrar o nome correspondente
+        if nome_correspondente:
+            id_cliente = clientes[nome_correspondente]
+            lista_pedidos.append([
+                id_cliente,                                # ID do Cliente do Kommo
+                nome_correspondente,                      # Nome do Cliente
+                pedido.get('id', 'N/A'),                   # ID do Pedido
+                pedido.get('status', 'N/A'),               # Status do Pedido
+                pedido.get('service', {}).get('company', {}).get('name', 'N/A'),  # Transportadora
+                pedido.get('updated_at', 'N/A'),           # Data de Atualização
+                pedido.get('to', {}).get('phone', 'N/A')   # Telefone do Cliente
+            ])
+        else:
+            print(f"Nome {nome_cliente_pedido} não encontrado ou não suficientemente próximo no Kommo.")
 
     # Adicionar cabeçalhos e limpar dados existentes
     worksheet.clear()  
