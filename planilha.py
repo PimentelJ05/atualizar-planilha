@@ -82,7 +82,7 @@ def encontrar_nome_semelhante(nome_cliente_pedido, clientes):
     nomes_kommo = list(clientes.keys())
     nome_correspondente, pontuacao = process.extractOne(nome_cliente_pedido, nomes_kommo)
     # Considera uma correspondência válida se a pontuação for alta o suficiente (ex: > 80)
-    if pontuacao > 80:
+    if pontuacao > 85:
         return nome_correspondente
     return None
 
