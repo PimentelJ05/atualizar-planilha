@@ -140,16 +140,17 @@ def encontrar_nome_semelhante(nome_cliente_pedido, clientes):
     return None
 
 # Função para atualizar a planilha com os dados dos clientes e pedidos, evitando duplicatas
+# Função para atualizar a planilha com os dados dos clientes e pedidos, incluindo o rastreamento
 def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
     lista_pedidos = []
     ids_adicionados = set()
-    
+
     for pedido in pedidos:
         nome_cliente_pedido = pedido.get('to', {}).get('name', 'N/A')
         nome_correspondente = encontrar_nome_semelhante(nome_cliente_pedido, clientes)
         id_cliente = clientes.get(nome_correspondente, '') if nome_correspondente else 'CLIENT ID NOT FOUND'
         id_pedido = pedido.get('id', 'N/A')
-        numero_rastreio = pedido.get('tracking', {}).get('code', 'NOT FOUND')  # Adicionando número de rastreio com "NOT FOUND" como padrão
+        rastreio = pedido.get('tracking', {}).get('code', 'N/A')  # Acessa o código de rastreamento
 
         if id_pedido not in ids_adicionados:
             lista_pedidos.append([
@@ -160,12 +161,13 @@ def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
                 pedido.get('service', {}).get('company', {}).get('name', 'N/A'),
                 pedido.get('updated_at', 'N/A'),
                 pedido.get('to', {}).get('phone', 'N/A'),
-                numero_rastreio  # Incluindo o número de rastreio na lista
+                rastreio  # Adiciona o rastreamento à lista de pedidos
             ])
             ids_adicionados.add(id_pedido)
 
-    worksheet.clear()  
-    worksheet.append_row(["ID do Cliente", "Nome do Cliente", "ID do Pedido", "Status do Pedido", "Transportadora", "Data de Atualização", "Telefone do Cliente", "Número de Rastreio"])
+    worksheet.clear()
+    worksheet.append_row(["ID do Cliente", "Nome do Cliente", "ID do Pedido", "Status do Pedido", "Transportadora",
+                          "Data de Atualização", "Telefone do Cliente", "Rastreamento"])  # Cabeçalho com Rastreamento
     worksheet.append_rows(lista_pedidos, value_input_option='USER_ENTERED')
 
 # Executando as funções para obter dados e atualizar a planilha
@@ -177,3 +179,4 @@ if pedidos and clientes:
     print("Planilha atualizada com sucesso!")
 else:
     print("Nenhum pedido ou cliente encontrado para salvar.")
+
