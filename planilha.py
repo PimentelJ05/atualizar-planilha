@@ -86,13 +86,12 @@ def obter_pedidos_melhor_envio():
     headers = {
         'Authorization': f'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxNTg5NyIsImp0aSI6ImIwNTU3ZjViYWJiZmQ4Y2JlMTM1MGYzMTBiODk5OTQ5OTk1ODgxYzIzNzhiMjcwMGI4ZTA2MTVmOWUyNDRjYTJiODc0YmM1OGM0YTc0Mzk5IiwiaWF0IjoxNzI1NTQzMjA4Ljk1NjgsIm5iZiI6MTcyNTU0MzIwOC45NTY4MDIsImV4cCI6MTcyODEzNTIwOC44ODM0NjQsInN1YiI6IjljNzMxYmY1LTA5OGItNDFiMy1iYzczLWJjYzFiOWQ3MWFkMCIsInNjb3BlcyI6WyJjYXJ0LXJlYWQiLCJjYXJ0LXdyaXRlIl19.sDfnwkohO72MNIn5vd-2mDVl50ftG3SNxVlchOmgmCkiHD69PUkkNbiX702ZzvcJdRDoSzUWgdUGwHesISAUOwqXhDfB3RU7XEA1gIFtbTosNlgHksalbCU7Aev7FO0mdyahCAjzMo8nydGHqcsb2cuM02zC3I2O1esAi_ZmSoqUI37AyAyiwlpb46LDRobgi88qzoowiQb5FQ93yQjfI55XTtAXJ2WSa23r9LHSxROp8VU7jlVJH-tLtBYNHrfAK5YrNYl7j--ZzKch_4atQBKmLtDWNzchKmEzBu_IyUdBdee-nYnN6PXzwJgitjLXRS1aoSvAytAwyHZcllNys9qsKf8MgL7yqnY5rEBn3IHC9A6Cj6NQiyBm8x4J0K-H6lnmabLyQ0ZG6zWoYopT9oihYNUBueoYhczqxuwx4h0SGFpLGGWZtq_yGOJbOu5_2ujDG9NjHdKnuBEzJbCAEMLr1VMnwZzKBBq7KF6mfpa7njWrC6Shsj_Env_Z5o2WIctbuBuy6WBDJmd8VgR0lRdi8UXcicD-s9SPyToYDnvmTBmqdJOS7alj2cdX3viPw42dSJ3I1eRL19MXxdNkpm-JzEmFNU5uNJi5trxqG9FRhNN-bthRixhB6EhwDX9MHYawTX14Q2j4NZNeCu2QUDnUGn5dotG5I5BjiV8wQGE',  # Atualize para o token válido
         'Content-Type': 'application/json'
-        "User-Agent": "Planilha Crédito Essencial (julia.pimentel@creditoessencial.com.br)" 
     }
 
     response = requests.get(url, headers=headers)
 
     if response.status_code == 200:
-        pedidos = response.json()['_embedded']['shipments']
+        pedidos = response.json().get('shipments', [])
         print("Pedidos obtidos do Melhor Envio:", pedidos)
         return pedidos
     elif response.status_code == 401:
@@ -102,7 +101,7 @@ def obter_pedidos_melhor_envio():
             headers['Authorization'] = f'Bearer {novo_access_token}'
             response = requests.get(url, headers=headers)
             if response.status_code == 200:
-                pedidos = response.json()['_embedded']['shipments']
+                pedidos = response.json().get('shipments', [])
                 print("Pedidos obtidos do Melhor Envio após renovação:", pedidos)
                 return pedidos
             else:
@@ -113,26 +112,45 @@ def obter_pedidos_melhor_envio():
         print(f"Erro ao obter pedidos: {response.status_code} - {response.text}")
     return []
 
-def obter_dados_rastreamento(id_pedido):
-    url = f"https://www.melhorenvio.com.br/api/v2/me/shipment/tracking/{id_pedido}"
-    headers = {
-        "Accept": "application/json",
-        "Content-type": "application/json",
-        "Authorization": f"Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxNTg5NyIsImp0aSI6ImIwNTU3ZjViYWJiZmQ4Y2JlMTM1MGYzMTBiODk5OTQ5OTk1ODgxYzIzNzhiMjcwMGI4ZTA2MTVmOWUyNDRjYTJiODc0YmM1OGM0YTc0Mzk5IiwiaWF0IjoxNzI1NTQzMjA4Ljk1NjgsIm5iZiI6MTcyNTU0MzIwOC45NTY4MDIsImV4cCI6MTcyODEzNTIwOC44ODM0NjQsInN1YiI6IjljNzMxYmY1LTA5OGItNDFiMy1iYzczLWJjYzFiOWQ3MWFkMCIsInNjb3BlcyI6WyJjYXJ0LXJlYWQiLCJjYXJ0LXdyaXRlIl19.sDfnwkohO72MNIn5vd-2mDVl50ftG3SNxVlchOmgmCkiHD69PUkkNbiX702ZzvcJdRDoSzUWgdUGwHesISAUOwqXhDfB3RU7XEA1gIFtbTosNlgHksalbCU7Aev7FO0mdyahCAjzMo8nydGHqcsb2cuM02zC3I2O1esAi_ZmSoqUI37AyAyiwlpb46LDRobgi88qzoowiQb5FQ93yQjfI55XTtAXJ2WSa23r9LHSxROp8VU7jlVJH-tLtBYNHrfAK5YrNYl7j--ZzKch_4atQBKmLtDWNzchKmEzBu_IyUdBdee-nYnN6PXzwJgitjLXRS1aoSvAytAwyHZcllNys9qsKf8MgL7yqnY5rEBn3IHC9A6Cj6NQiyBm8x4J0K-H6lnmabLyQ0ZG6zWoYopT9oihYNUBueoYhczqxuwx4h0SGFpLGGWZtq_yGOJbOu5_2ujDG9NjHdKnuBEzJbCAEMLr1VMnwZzKBBq7KF6mfpa7njWrC6Shsj_Env_Z5o2WIctbuBuy6WBDJmd8VgR0lRdi8UXcicD-s9SPyToYDnvmTBmqdJOS7alj2cdX3viPw42dSJ3I1eRL19MXxdNkpm-JzEmFNU5uNJi5trxqG9FRhNN-bthRixhB6EhwDX9MHYawTX14Q2j4NZNeCu2QUDnUGn5dotG5I5BjiV8wQGE",  # Atualize para o token válido
-        "User-Agent": "Planilha Crédito Essencial (julia.pimentel@creditoessencial.com.br)"
-    }
-
-    response = requests.get(url, headers=headers)  # Use GET para rastreamento
-    if response.status_code == 200:
-        return response.json()
-    else:
-        print(f"Erro ao obter dados de rastreamento: {response.status_code} - {response.text}")
-        return {}
-
-def encontrar_nome_semelhante(nome_cliente, clientes):
-    nome_encontrado, _ = process.extractOne(nome_cliente, clientes.keys())
+# Função para encontrar um nome semelhante na lista de clientes
+def encontrar_nome_semelhante(nome, clientes):
+    nomes_clientes = list(clientes.keys())
+    nome_encontrado, _ = process.extractOne(nome, nomes_clientes)
     return nome_encontrado
 
+# Função para obter dados de rastreamento de um pedido
+def obter_dados_rastreamento(pedido_id):
+    url = f'https://www.melhorenvio.com.br/api/v2/me/shipment/{pedido_id}/tracking'
+    headers = {
+        'Authorization': f'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxNTg5NyIsImp0aSI6ImIwNTU3ZjViYWJiZmQ4Y2JlMTM1MGYzMTBiODk5OTQ5OTk1ODgxYzIzNzhiMjcwMGI4ZTA2MTVmOWUyNDRjYTJiODc0YmM1OGM0YTc0Mzk5IiwiaWF0IjoxNzI1NTQzMjA4Ljk1NjgsIm5iZiI6MTcyNTU0MzIwOC45NTY4MDIsImV4cCI6MTcyODEzNTIwOC44ODM0NjQsInN1YiI6IjljNzMxYmY1LTA5OGItNDFiMy1iYzczLWJjYzFiOWQ3MWFkMCIsInNjb3BlcyI6WyJjYXJ0LXJlYWQiLCJjYXJ0LXdyaXRlIl19.sDfnwkohO72MNIn5vd-2mDVl50ftG3SNxVlchOmgmCkiHD69PUkkNbiX702ZzvcJdRDoSzUWgdUGwHesISAUOwqXhDfB3RU7XEA1gIFtbTosNlgHksalbCU7Aev7FO0mdyahCAjzMo8nydGHqcsb2cuM02zC3I2O1esAi_ZmSoqUI37AyAyiwlpb46LDRobgi88qzoowiQb5FQ93yQjfI55XTtAXJ2WSa23r9LHSxROp8VU7jlVJH-tLtBYNHrfAK5YrNYl7j--ZzKch_4atQBKmLtDWNzchKmEzBu_IyUdBdee-nYnN6PXzwJgitjLXRS1aoSvAytAwyHZcllNys9qsKf8MgL7yqnY5rEBn3IHC9A6Cj6NQiyBm8x4J0K-H6lnmabLyQ0ZG6zWoYopT9oihYNUBueoYhczqxuwx4h0SGFpLGGWZtq_yGOJbOu5_2ujDG9NjHdKnuBEzJbCAEMLr1VMnwZzKBBq7KF6mfpa7njWrC6Shsj_Env_Z5o2WIctbuBuy6WBDJmd8VgR0lRdi8UXcicD-s9SPyToYDnvmTBmqdJOS7alj2cdX3viPw42dSJ3I1eRL19MXxdNkpm-JzEmFNU5uNJi5trxqG9FRhNN-bthRixhB6EhwDX9MHYawTX14Q2j4NZNeCu2QUDnUGn5dotG5I5BjiV8wQGE',  # Atualize para o token válido
+        'Content-Type': 'application/json'
+    }
+
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+        rastreamento = response.json()
+        print(f"Dados de rastreamento para o pedido {pedido_id}:", rastreamento)
+        return rastreamento
+    elif response.status_code == 401:
+        # Tentativa de renovar o token ao receber erro 401 (não autorizado)
+        novo_access_token, novo_refresh_token = refresh_access_token(refresh_token)
+        if novo_access_token:
+            headers['Authorization'] = f'Bearer {novo_access_token}'
+            response = requests.get(url, headers=headers)
+            if response.status_code == 200:
+                rastreamento = response.json()
+                print(f"Dados de rastreamento para o pedido {pedido_id} após renovação:", rastreamento)
+                return rastreamento
+            else:
+                print(f"Erro ao obter rastreamento após renovação: {response.status_code} - {response.text}")
+        else:
+            print("Não foi possível renovar o access token.")
+    else:
+        print(f"Erro ao obter rastreamento: {response.status_code} - {response.text}")
+    return {}
+
+# Função para atualizar a planilha do Google Sheets
 def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
     lista_pedidos = []
     ids_adicionados = set()
@@ -160,11 +178,28 @@ def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
             ])
             ids_adicionados.add(id_pedido)
 
-    worksheet.clear()
-    worksheet.append_row(["ID do Cliente", "Nome do Cliente", "ID do Pedido", "Status do Pedido", "Transportadora", "Data de Atualização", "Telefone do Cliente", "Código de Rastreio"])  # Adicionando o cabeçalho para o código de rastreio
-    worksheet.append_rows(lista_pedidos, value_input_option='USER_ENTERED')
+    # Atualizando a planilha com os dados dos pedidos
+    if lista_pedidos:
+        # Limpar a planilha existente, se necessário
+        worksheet.clear()
 
-# Fluxo Principal
-clientes = obter_nomes_ids_clientes()
-pedidos = obter_pedidos_melhor_envio()
-atualizar_planilha_google_sheets(pedidos, clientes, worksheet)
+        # Adicionar cabeçalhos
+        headers = [
+            'ID Cliente', 'Nome Cliente', 'ID Pedido', 'Status', 'Transportadora', 'Data Atualização', 'Telefone', 'Código Rastreamento'
+        ]
+        worksheet.append_row(headers)
+
+        # Adicionar dados dos pedidos
+        for linha in lista_pedidos:
+            worksheet.append_row(linha)
+
+    print("Planilha atualizada com sucesso.")
+
+# Função principal para executar o script
+def main():
+    clientes = obter_nomes_ids_clientes()
+    pedidos = obter_pedidos_melhor_envio()
+    atualizar_planilha_google_sheets(pedidos, clientes, worksheet)
+
+if __name__ == '__main__':
+    main()
