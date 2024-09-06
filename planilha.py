@@ -81,7 +81,6 @@ def obter_nomes_ids_clientes():
     return {}
     
     def obter_detalhes_pedido(order_id):
-    """Função para obter detalhes de um pedido específico, incluindo o código de rastreamento."""
     url = f"https://www.melhorenvio.com.br/api/v2/me/orders/{order_id}"
     headers = {
         "Accept": "application/json",
