@@ -79,6 +79,31 @@ def obter_nomes_ids_clientes():
     else:
         print(f"Erro ao obter contatos: {response.status_code} - {response.text}")
     return {}
+    
+    def obter_detalhes_pedido(order_id):
+    """Função para obter detalhes de um pedido específico, incluindo o código de rastreamento."""
+    url = f"https://www.melhorenvio.com.br/api/v2/me/orders/{order_id}"
+    headers = {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {access_token}",
+        "User-Agent": "Planilha Crédito Essencial (julia.pimentel@creditoessencial.com.br)"
+    }
+    
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        return response.json()
+    elif response.status_code == 401:
+        # Tentativa de renovar o token se não autorizado
+        novo_access_token, novo_refresh_token = refresh_access_token(refresh_token)
+        if novo_access_token:
+            headers['Authorization'] = f'Bearer {novo_access_token}'
+            response = requests.get(url, headers=headers)
+            if response.status_code == 200:
+                return response.json()
+    print(f"Erro ao obter detalhes do pedido {order_id}: {response.status_code} - {response.text}")
+    return {}
+
 
 # Função para obter todos os pedidos do Melhor Envio
 def obter_todos_pedidos():
