@@ -43,8 +43,8 @@ access_token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxNTg5NyIsImp0aSI
 refresh_token = 'def50200cc347aa16bbf2326ff0a2b659e52abe511a1bc1d2bb773a9f8363fbdf46e9a1fc2744364fe8869365765829ff04caa4eac5c837302c1dc25a42ea0e7fd3bfd1ea02f9f32fbb4ab80a7cffbb38e1ce8ae1dd61b66ae4396abda49c41c495f8ee6923e70489ebe99418212d3b1a54ae65942123bf38c9949f359936e3245f1e5ef15bb9b09e788ed527f637d92b26fd15c42b39afedda22ee74786551e26aee4ba231785e4204a8c351dca0db528e915f86aa36b2045d6fcd19c77048de2e61a13aee46ce1f4a02c13152aeb634235394823ee3e07f312a85e7a67917583c5e1145c188ce8f2070a5b21f621e57af6af2f6663d5bd3e87816e37cb2866759e880d90219cd3bd255c257e29c7c7433769dd32f87a3157b5e23b855a61663eac8da02d93d59d612818e5a2ab132986632329589788b9492ae77f8288ef4adf38b49fcc29b9a7f9bfbab95c055c14b2b4499c38f8117417ec7b570517862c26f2ddcdf7763ab852872890bad5b226f11d58709941bfbe8dd6635067624c501d31a6e6e49585824dc98e3eff9180b04027d90593afb5b2b6dba088af0f15292a29'
 
 # Função para obter o código de rastreio de um pedido específico
-def obter_codigo_rastreio(id_pedido):
-    url = f"https://www.melhorenvio.com.br/api/v2/me/shipment/{id_pedido}/tracking"
+def obter_todos_pedidos_com_rastreamento():
+    url = "https://www.melhorenvio.com.br/api/v2/me/orders"
     headers = {
         "Accept": "application/json",
         "Authorization": f"Bearer {access_token}",
