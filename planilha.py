@@ -64,7 +64,7 @@ def obter_nomes_ids_clientes():
     return {}
 
 def obter_detalhes_pedido(order_id):
-    url = f"https://www.melhorenvio.com.br/api/v2/me/orders/{order_id}"
+    url = f"https://www.melhorenvio.com.br/api/v2/me/orders"
     headers = {
         "Accept": "application/json",
         "Content-Type": "application/json",
