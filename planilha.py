@@ -149,7 +149,8 @@ def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
         nome_correspondente = encontrar_nome_semelhante(nome_cliente_pedido, clientes)
         id_cliente = clientes.get(nome_correspondente, '') if nome_correspondente else 'CLIENT ID NOT FOUND'
         id_pedido = pedido.get('id', 'N/A')
-        codigo_rastreio = pedido.get('tracking', {}).get('code', 'N/A')  # Extraindo o código de rastreio
+        # Acessando o código de rastreio da forma correta conforme a documentação
+        codigo_rastreio = pedido.get('tracking', {}).get('code', 'N/A')
 
         if id_pedido not in ids_adicionados:
             lista_pedidos.append([
@@ -167,6 +168,7 @@ def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
     worksheet.clear()
     worksheet.append_row(["ID do Cliente", "Nome do Cliente", "ID do Pedido", "Status do Pedido", "Transportadora", "Data de Atualização", "Telefone do Cliente", "Código de Rastreio"])  # Adicionando o cabeçalho para o código de rastreio
     worksheet.append_rows(lista_pedidos, value_input_option='USER_ENTERED')
+
 
 # Executando as funções para obter dados e atualizar a planilha
 clientes = obter_nomes_ids_clientes()
