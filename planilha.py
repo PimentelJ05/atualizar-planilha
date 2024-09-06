@@ -88,7 +88,7 @@ def obter_pedidos_melhor_envio():
         "Accept": "application/json",
         "Content-Type": "application/json",
         'Authorization': f'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6ImM0YWU0ZDkzNjkxYjI1NzA3MmZlNzQwMjNjMWUzYjdhMzg3NjY1MWRhM2UyNGUwYjFkYTBkYzQyN2Q1NDZmNjYyNWZmYTdlNGVmZTk3NzUzIn0.eyJhdWQiOiIyYmFjMWY2OC1jMjA0LTQ3MmEtYWRmZS0wNjMwYTI1OTJjZDQiLCJqdGkiOiJjNGFlNGQ5MzY5MWIyNTcwNzJmZTc0MDIzYzFlM2I3YTM4NzY2NTFkYTNlMjRlMGIxZGEwZGM0MjdkNTQ2ZjY2MjVmZmE3ZTRlZmU5Nzc1MyIsImlhdCI6MTcyNTI5MzExNSwibmJmIjoxNzI1MjkzMTE1LCJleHAiOjE3OTg3NjE2MDAsInN1YiI6IjEwNDY2MDM1IiwiZ3JhbnRfdHlwZSI6IiIsImFjY291bnRfaWQiOjMyMDYxNDU1LCJiYXNlX2RvbWFpbiI6ImtvbW1vLmNvbSIsInZlcnNpb24iOjIsInNjb3BlcyI6WyJjcm0iLCJmaWxlcyIsImZpbGVzX2RlbGV0ZSIsIm5vdGlmaWNhdGlvbnMiLCJwdXNoX25vdGlmaWNhdGlvbnMiXSwiaGFzaF91dWlkIjoiZTRmZWYxMDgtODViZi00ZmY0LTllOWYtMGRmZDAwNWYzNWJlIiwiYXBpX2RvbWFpbiI6ImFwaS1nLmtvbW1vLmNvbSJ9.rW4oG9BwkoTSdLi6DLFlCiL0wE8tMPN5dBnNAZtnQYGjdOe1kSKx4fU2s3Tm8vrHF0aI7_1YlubA85ty4uhsh4x_1IGC9593zmOKN-Z2nkK0qSaX0ANQwTNST5XjuhF03FcLEpnqJSb-bjPW-U15vg2SIwR0qezbrPuJMKtjFdiGNwWQW3Jjx2VogZzRQuuRXA30VT8bdDtzySnSQnG0NIb8wGie9QYsZPcYT3c4HQVlPHL8sr9OPhNujTi7YTpiCDnrwDQvO4JBt0CstD78X_Snf4bGQfSOUa8KoAX9DkrHz8-LDkhGc6O1Rwq92iZk6nANI34a8SVyz2oVXwntTw',  # Atualize para o token válido
-        'User-Agent": "Planilha Crédito Essencial (julia.pimentel@creditoessencial.com.br)"
+        "User-Agent": "Planilha Crédito Essencial (julia.pimentel@creditoessencial.com.br)"
     }
     response = requests.get(url, headers=headers)
 
@@ -128,7 +128,7 @@ def obter_dados_rastreamento(pedido_id):
         "Accept": "application/json",
         "Content-Type": "application/json",
         'Authorization': f'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6ImM0YWU0ZDkzNjkxYjI1NzA3MmZlNzQwMjNjMWUzYjdhMzg3NjY1MWRhM2UyNGUwYjFkYTBkYzQyN2Q1NDZmNjYyNWZmYTdlNGVmZTk3NzUzIn0.eyJhdWQiOiIyYmFjMWY2OC1jMjA0LTQ3MmEtYWRmZS0wNjMwYTI1OTJjZDQiLCJqdGkiOiJjNGFlNGQ5MzY5MWIyNTcwNzJmZTc0MDIzYzFlM2I3YTM4NzY2NTFkYTNlMjRlMGIxZGEwZGM0MjdkNTQ2ZjY2MjVmZmE3ZTRlZmU5Nzc1MyIsImlhdCI6MTcyNTI5MzExNSwibmJmIjoxNzI1MjkzMTE1LCJleHAiOjE3OTg3NjE2MDAsInN1YiI6IjEwNDY2MDM1IiwiZ3JhbnRfdHlwZSI6IiIsImFjY291bnRfaWQiOjMyMDYxNDU1LCJiYXNlX2RvbWFpbiI6ImtvbW1vLmNvbSIsInZlcnNpb24iOjIsInNjb3BlcyI6WyJjcm0iLCJmaWxlcyIsImZpbGVzX2RlbGV0ZSIsIm5vdGlmaWNhdGlvbnMiLCJwdXNoX25vdGlmaWNhdGlvbnMiXSwiaGFzaF91dWlkIjoiZTRmZWYxMDgtODViZi00ZmY0LTllOWYtMGRmZDAwNWYzNWJlIiwiYXBpX2RvbWFpbiI6ImFwaS1nLmtvbW1vLmNvbSJ9.rW4oG9BwkoTSdLi6DLFlCiL0wE8tMPN5dBnNAZtnQYGjdOe1kSKx4fU2s3Tm8vrHF0aI7_1YlubA85ty4uhsh4x_1IGC9593zmOKN-Z2nkK0qSaX0ANQwTNST5XjuhF03FcLEpnqJSb-bjPW-U15vg2SIwR0qezbrPuJMKtjFdiGNwWQW3Jjx2VogZzRQuuRXA30VT8bdDtzySnSQnG0NIb8wGie9QYsZPcYT3c4HQVlPHL8sr9OPhNujTi7YTpiCDnrwDQvO4JBt0CstD78X_Snf4bGQfSOUa8KoAX9DkrHz8-LDkhGc6O1Rwq92iZk6nANI34a8SVyz2oVXwntTw',  # Atualize para o token válido
-        'User-Agent": "Planilha Crédito Essencial (julia.pimentel@creditoessencial.com.br)"
+        "User-Agent": "Planilha Crédito Essencial (julia.pimentel@creditoessencial.com.br)"
     }
 
     response = requests.get(url, headers=headers)
