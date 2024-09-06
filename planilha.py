@@ -175,7 +175,7 @@ def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
 
 # Executando as funções para obter dados e atualizar a planilha
 clientes = obter_nomes_ids_clientes()
-pedidos = obter_todos_pedidos()
+pedidos = obter_todos_pedidos_com_rastreamento()
 
 if pedidos and clientes:
     atualizar_planilha_google_sheets(pedidos, clientes, worksheet)
