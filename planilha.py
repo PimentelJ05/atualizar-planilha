@@ -95,21 +95,24 @@ def obter_codigo_rastreamento(tracking_code):
     }
     
     response = requests.get(url, headers=headers)
+    
     if response.status_code == 200:
-        tracking_info = response.json()
+        tracking_info = response.json().get('tracking', [])
         print(f"Rastreamento para {tracking_code}: {tracking_info}")
         return tracking_info
     elif response.status_code == 401:
+        # Tentativa de renovar o token se não autorizado
         novo_access_token, novo_refresh_token = refresh_access_token(refresh_token)
         if novo_access_token:
             headers['Authorization'] = f'Bearer {novo_access_token}'
             response = requests.get(url, headers=headers)
             if response.status_code == 200:
-                tracking_info = response.json()
+                tracking_info = response.json().get('tracking', [])
                 print(f"Rastreamento para {tracking_code} após renovação: {tracking_info}")
                 return tracking_info
     print(f"Erro ao obter rastreamento para {tracking_code}: {response.status_code} - {response.text}")
     return {}
+
 
 def obter_todos_pedidos():
     base_url = "https://www.melhorenvio.com.br/api/v2/me/orders"
@@ -181,16 +184,16 @@ def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
         nome_correspondente = encontrar_nome_semelhante(nome_cliente_pedido, clientes)
         id_cliente = clientes.get(nome_correspondente, '') if nome_correspondente else 'CLIENT ID NOT FOUND'
         id_pedido = pedido.get('id', 'N/A')
-        codigo_rastreamento = pedido.get('tracking_info', {}).get('tracking_code', 'N/A')  # Certifique-se de que o caminho está correto
-        status_rastreamento = pedido.get('tracking_info', {}).get('status', 'N/A')  # Certifique-se de que o caminho está correto
+        codigo_rastreamento = pedido.get('tracking_info', {}).get('tracking_code', 'N/A')  # Adiciona código de rastreamento
+        status_rastreamento = pedido.get('tracking_info', {}).get('status', 'N/A')  # Adiciona status de rastreamento
 
         if id_pedido not in ids_adicionados:
             lista_pedidos.append([
                 id_cliente,
                 nome_correspondente or nome_cliente_pedido,
                 id_pedido,
-                codigo_rastreamento,  # Este campo deve aparecer
-                status_rastreamento,  # Este campo deve aparecer
+                codigo_rastreamento,
+                status_rastreamento,
                 pedido.get('service', {}).get('company', {}).get('name', 'N/A'),
                 pedido.get('updated_at', 'N/A'),
                 pedido.get('to', {}).get('phone', 'N/A')
@@ -202,8 +205,8 @@ def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
     worksheet.append_row(["ID do Cliente", "Nome do Cliente", "ID do Pedido", "Código de Rastreamento", "Status de Rastreamento", "Transportadora", "Data de Atualização", "Telefone do Cliente"])
     worksheet.append_rows(lista_pedidos, value_input_option='USER_ENTERED')
 
-
     print("Planilha atualizada com sucesso!")
+
 
 # Executando as funções para obter dados e atualizar a planilha
 clientes = obter_nomes_ids_clientes()
