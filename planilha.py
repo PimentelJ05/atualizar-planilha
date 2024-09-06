@@ -42,7 +42,7 @@ def refresh_access_token(refresh_token):
 access_token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxNTg5NyIsImp0aSI6ImIwNTU3ZjViYWJiZmQ4Y2JlMTM1MGYzMTBiODk5OTQ5OTk1ODgxYzIzNzhiMjcwMGI4ZTA2MTVmOWUyNDRjYTJiODc0YmM1OGM0YTc0Mzk5IiwiaWF0IjoxNzI1NTQzMjA4Ljk1NjgsIm5iZiI6MTcyNTU0MzIwOC45NTY4MDIsImV4cCI6MTcyODEzNTIwOC44ODM0NjQsInN1YiI6IjljNzMxYmY1LTA5OGItNDFiMy1iYzczLWJjYzFiOWQ3MWFkMCIsInNjb3BlcyI6WyJjYXJ0LXJlYWQiLCJjYXJ0LXdyaXRlIl19.sDfnwkohO72MNIn5vd-2mDVl50ftG3SNxVlchOmgmCkiHD69PUkkNbiX702ZzvcJdRDoSzUWgdUGwHesISAUOwqXhDfB3RU7XEA1gIFtbTosNlgHksalbCU7Aev7FO0mdyahCAjzMo8nydGHqcsb2cuM02zC3I2O1esAi_ZmSoqUI37AyAyiwlpb46LDRobgi88qzoowiQb5FQ93yQjfI55XTtAXJ2WSa23r9LHSxROp8VU7jlVJH-tLtBYNHrfAK5YrNYl7j--ZzKch_4atQBKmLtDWNzchKmEzBu_IyUdBdee-nYnN6PXzwJgitjLXRS1aoSvAytAwyHZcllNys9qsKf8MgL7yqnY5rEBn3IHC9A6Cj6NQiyBm8x4J0K-H6lnmabLyQ0ZG6zWoYopT9oihYNUBueoYhczqxuwx4h0SGFpLGGWZtq_yGOJbOu5_2ujDG9NjHdKnuBEzJbCAEMLr1VMnwZzKBBq7KF6mfpa7njWrC6Shsj_Env_Z5o2WIctbuBuy6WBDJmd8VgR0lRdi8UXcicD-s9SPyToYDnvmTBmqdJOS7alj2cdX3viPw42dSJ3I1eRL19MXxdNkpm-JzEmFNU5uNJi5trxqG9FRhNN-bthRixhB6EhwDX9MHYawTX14Q2j4NZNeCu2QUDnUGn5dotG5I5BjiV8wQGE'
 refresh_token = 'def50200cc347aa16bbf2326ff0a2b659e52abe511a1bc1d2bb773a9f8363fbdf46e9a1fc2744364fe8869365765829ff04caa4eac5c837302c1dc25a42ea0e7fd3bfd1ea02f9f32fbb4ab80a7cffbb38e1ce8ae1dd61b66ae4396abda49c41c495f8ee6923e70489ebe99418212d3b1a54ae65942123bf38c9949f359936e3245f1e5ef15bb9b09e788ed527f637d92b26fd15c42b39afedda22ee74786551e26aee4ba231785e4204a8c351dca0db528e915f86aa36b2045d6fcd19c77048de2e61a13aee46ce1f4a02c13152aeb634235394823ee3e07f312a85e7a67917583c5e1145c188ce8f2070a5b21f621e57af6af2f6663d5bd3e87816e37cb2866759e880d90219cd3bd255c257e29c7c7433769dd32f87a3157b5e23b855a61663eac8da02d93d59d612818e5a2ab132986632329589788b9492ae77f8288ef4adf38b49fcc29b9a7f9bfbab95c055c14b2b4499c38f8117417ec7b570517862c26f2ddcdf7763ab852872890bad5b226f11d58709941bfbe8dd6635067624c501d31a6e6e49585824dc98e3eff9180b04027d90593afb5b2b6dba088af0f15292a29'
 
-# Função para obter todos os pedidos com rastreamento
+# Função para obter todos os pedidos do Melhor Envio com rastreamento
 def obter_todos_pedidos_com_rastreamento():
     base_url = "https://www.melhorenvio.com.br/api/v2/me/orders"
     headers = {
@@ -119,53 +119,21 @@ def obter_nomes_ids_clientes():
         print(f"Erro ao obter contatos: {response.status_code} - {response.text}")
     return {}
 
-# Função para obter todos os pedidos do Melhor Envio
-def obter_todos_pedidos_com_rastreamento():
-    url = "https://www.melhorenvio.com.br/api/v2/me/orders"
+# Função para obter o código de rastreio de um pedido específico
+def obter_codigo_rastreio(id_pedido):
+    url = f"https://www.melhorenvio.com.br/api/v2/me/shipment/{id_pedido}/tracking"
     headers = {
         "Accept": "application/json",
         "Authorization": f"Bearer {access_token}",
         "User-Agent": "Planilha Crédito Essencial (julia.pimentel@creditoessencial.com.br)"
     }
-    pedidos_com_rastreamento = []
-    
-    pagina = 1
-
-    while True:
-        response = requests.get(f"{base_url}?page={pagina}", headers=headers)
-        if response.status_code == 204:
-            break
-        elif response.status_code == 401:
-            novo_access_token, novo_refresh_token = refresh_access_token(refresh_token)
-            if novo_access_token:
-                headers['Authorization'] = f'Bearer {novo_access_token}'
-                response = requests.get(f"{base_url}?page={pagina}", headers=headers)
-                if response.status_code == 200:
-                    dados = response.json()
-                    pedidos = dados.get('data', [])
-                    if not pedidos:
-                        break
-                    todos_pedidos.extend(pedidos)
-                    pagina += 1
-                else:
-                    print(f"Erro ao fazer a requisição após renovação: {response.status_code} - {response.text}")
-                    break
-            else:
-                print("Não foi possível renovar o access token.")
-                break
-        elif response.status_code != 200:
-            print(f"Erro ao fazer a requisição: {response.status_code}")
-            print("Conteúdo da resposta:", response.text)
-            break
-
-        dados = response.json()
-        pedidos = dados.get('data', [])
-        if not pedidos:
-            break
-        todos_pedidos.extend(pedidos)
-        pagina += 1
-
-    return todos_pedidos
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        tracking_info = response.json()
+        return tracking_info.get('tracking_code', 'Não disponível')
+    else:
+        print(f"Erro ao obter código de rastreio para o pedido {id_pedido}: {response.status_code} - {response.text}")
+        return 'Erro'
 
 # Função para encontrar o nome mais próximo usando fuzzy matching
 def encontrar_nome_semelhante(nome_cliente_pedido, clientes):
