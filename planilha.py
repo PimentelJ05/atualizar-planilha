@@ -144,7 +144,6 @@ def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
     lista_pedidos = []
     ids_adicionados = set()
     
-    # Adiciona o código de rastreamento
     for pedido in pedidos:
         nome_cliente_pedido = pedido.get('to', {}).get('name', 'N/A')
         nome_correspondente = encontrar_nome_semelhante(nome_cliente_pedido, clientes)
