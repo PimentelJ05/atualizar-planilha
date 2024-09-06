@@ -86,7 +86,7 @@ def obter_detalhes_pedido(order_id):
     return {}
 
 def obter_codigo_rastreamento(tracking_code):
-    url = f"https://www.melhorenvio.com.br/api/v2/me/shipment/tracking?tracking_code={tracking_code}"
+    url = f"https://www.melhorenvio.com.br/api/v2/me/shipment/tracking"
     headers = {
         "Accept": "application/json",
         "Content-Type": "application/json",
