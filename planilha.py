@@ -144,6 +144,7 @@ def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
     lista_pedidos = []
     ids_adicionados = set()
     
+    # Adiciona o código de rastreamento
     for pedido in pedidos:
         nome_cliente_pedido = pedido.get('to', {}).get('name', 'N/A')
         nome_correspondente = encontrar_nome_semelhante(nome_cliente_pedido, clientes)
@@ -164,16 +165,12 @@ def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
             ])
             ids_adicionados.add(id_pedido)
 
+    # Clear the existing data and add new headers
     worksheet.clear()  
     worksheet.append_row(["ID do Cliente", "Nome do Cliente", "ID do Pedido", "Código de Rastreamento", "Status do Pedido", "Transportadora", "Data de Atualização", "Telefone do Cliente"])
     worksheet.append_rows(lista_pedidos, value_input_option='USER_ENTERED')
 
-# Executando as funções para obter dados e atualizar a planilha
-clientes = obter_nomes_ids_clientes()
-pedidos = obter_todos_pedidos()
-
-if pedidos and clientes:
-    atualizar_planilha_google_sheets(pedidos, clientes, worksheet)
     print("Planilha atualizada com sucesso!")
+
 else:
     print("Nenhum pedido ou cliente encontrado para salvar.")
