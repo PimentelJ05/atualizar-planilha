@@ -123,6 +123,8 @@ def obter_todos_pedidos():
 
         dados = response.json()
         pedidos = dados.get('data', [])
+        for pedido in pedidos:
+            print(pedido)  # Debug: Visualizando a estrutura do pedido para encontrar o código de rastreamento
         if not pedidos:
             break
         todos_pedidos.extend(pedidos)
@@ -131,15 +133,8 @@ def obter_todos_pedidos():
     print("Pedidos obtidos do Melhor Envio:", todos_pedidos)
     return todos_pedidos
 
-# Função para encontrar o nome mais próximo usando fuzzy matching
-def encontrar_nome_semelhante(nome_cliente_pedido, clientes):
-    nomes_kommo = list(clientes.keys())
-    nome_correspondente, pontuacao = process.extractOne(nome_cliente_pedido, nomes_kommo)
-    if pontuacao > 85:
-        return nome_correspondente
-    return None
 
-# Função para atualizar a planilha com os dados dos clientes e pedidos, evitando duplicatas
+# Função para encontrar o nome mais próximo usando fuzzy matching
 def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
     lista_pedidos = []
     ids_adicionados = set()
@@ -149,14 +144,16 @@ def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
         nome_correspondente = encontrar_nome_semelhante(nome_cliente_pedido, clientes)
         id_cliente = clientes.get(nome_correspondente, '') if nome_correspondente else 'CLIENT ID NOT FOUND'
         id_pedido = pedido.get('id', 'N/A')
-        codigo_rastreamento = pedido.get('tracking_code', 'N/A')  # Adiciona o código de rastreamento
-
+        
+        # Ajuste do caminho para o código de rastreamento se necessário
+        codigo_rastreamento = pedido.get('tracking_code', 'N/A')  # Verifique o caminho correto aqui
+        
         if id_pedido not in ids_adicionados:
             lista_pedidos.append([
                 id_cliente,
                 nome_correspondente or nome_cliente_pedido,
                 id_pedido,
-                codigo_rastreamento,  # Inclui o código de rastreamento
+                codigo_rastreamento,
                 pedido.get('status', 'N/A'),
                 pedido.get('service', {}).get('company', {}).get('name', 'N/A'),
                 pedido.get('updated_at', 'N/A'),
@@ -164,12 +161,12 @@ def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
             ])
             ids_adicionados.add(id_pedido)
 
-    # Clear the existing data and add new headers
     worksheet.clear()  
     worksheet.append_row(["ID do Cliente", "Nome do Cliente", "ID do Pedido", "Código de Rastreamento", "Status do Pedido", "Transportadora", "Data de Atualização", "Telefone do Cliente"])
     worksheet.append_rows(lista_pedidos, value_input_option='USER_ENTERED')
 
     print("Planilha atualizada com sucesso!")
+
 
 # Executando as funções para obter dados e atualizar a planilha
 clientes = obter_nomes_ids_clientes()
