@@ -74,20 +74,22 @@ def obter_detalhes_pedido(order_id):
     
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
-        detalhes_pedido = response.json()
-        print(f"Detalhes do pedido {order_id}: {json.dumps(detalhes_pedido, indent=2)}")
-        return detalhes_pedido
+        pedido_detalhes = response.json()
+        # Extrair o código de rastreamento corretamente
+        tracking_code = pedido_detalhes.get('tracking_code', None)
+        return tracking_code, pedido_detalhes  # Retorna o código de rastreamento e os detalhes do pedido
     elif response.status_code == 401:
         novo_access_token, novo_refresh_token = refresh_access_token(refresh_token)
         if novo_access_token:
             headers['Authorization'] = f'Bearer {novo_access_token}'
             response = requests.get(url, headers=headers)
             if response.status_code == 200:
-                detalhes_pedido = response.json()
-                print(f"Detalhes do pedido {order_id} após renovação: {json.dumps(detalhes_pedido, indent=2)}")
-                return detalhes_pedido
+                pedido_detalhes = response.json()
+                tracking_code = pedido_detalhes.get('tracking_code', None)
+                return tracking_code, pedido_detalhes
     print(f"Erro ao obter detalhes do pedido {order_id}: {response.status_code} - {response.text}")
-    return {}
+    return None, {}
+
 
 def obter_todos_pedidos():
     base_url = "https://www.melhorenvio.com.br/api/v2/me/orders"
@@ -133,14 +135,18 @@ def obter_todos_pedidos():
         if not pedidos:
             break
         for pedido in pedidos:
-            detalhes = obter_detalhes_pedido(pedido['id'])
-            tracking_code = detalhes.get('tracking_code', 'N/A')  # Ajuste para extrair o código de rastreamento corretamente
-            pedido['tracking_code'] = tracking_code
+            tracking_code, detalhes = obter_detalhes_pedido(pedido['id'])
+            if tracking_code:  # Somente busca rastreamento se o código estiver disponível
+                tracking_info = obter_codigo_rastreamento(tracking_code)
+                pedido['tracking_info'] = tracking_info
+            else:
+                pedido['tracking_info'] = {}
             todos_pedidos.append(pedido)
         pagina += 1
 
     print("Pedidos obtidos do Melhor Envio com detalhes e rastreamento:", todos_pedidos)
     return todos_pedidos
+
 
 def encontrar_nome_semelhante(nome_cliente_pedido, clientes):
     nomes_kommo = list(clientes.keys())
@@ -158,8 +164,18 @@ def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
         nome_correspondente = encontrar_nome_semelhante(nome_cliente_pedido, clientes)
         id_cliente = clientes.get(nome_correspondente, '') if nome_correspondente else 'CLIENT ID NOT FOUND'
         id_pedido = pedido.get('id', 'N/A')
-        codigo_rastreamento = pedido.get('tracking_code', 'N/A')  # Usando o código de rastreamento diretamente do pedido
-        status_rastreamento = pedido.get('status', 'N/A')  # Ajuste conforme necessário para o status correto
+        
+        # Verifica se o código de rastreamento está presente
+        if 'tracking_info' in pedido and 'tracking_code' in pedido['tracking_info']:
+            codigo_rastreamento = pedido['tracking_info'].get('tracking_code', 'N/A')
+        else:
+            codigo_rastreamento = "não foi possível localizar o código"
+
+        # Verifica se o status de rastreamento está presente
+        if 'tracking_info' in pedido and 'status' in pedido['tracking_info']:
+            status_rastreamento = pedido['tracking_info'].get('status', 'N/A')
+        else:
+            status_rastreamento = "não foi possível localizar o status"
 
         if id_pedido not in ids_adicionados:
             lista_pedidos.append([
@@ -181,13 +197,5 @@ def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
 
     print("Planilha atualizada com sucesso!")
 
-
-# Executando as funções para obter dados e atualizar a planilha
-clientes = obter_nomes_ids_clientes()
-pedidos = obter_todos_pedidos()
-
-if pedidos and clientes:
-    atualizar_planilha_google_sheets(pedidos, clientes, worksheet)
-    print("Planilha atualizada com sucesso!")
 else:
     print("Nenhum pedido ou cliente encontrado para salvar.")
