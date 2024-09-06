@@ -25,7 +25,7 @@ credenciais = Credentials.from_service_account_info(credentials_info, scopes=sco
 client = gspread.authorize(credenciais)
 
 # Acessar a planilha do Google Sheets (ID da sua planilha)
-planilha_id = '1-_lGGdU1gH_IkehJrUPydfQ_KxW3J_R9rAS-5dLyGFA'
+planilha_id = '1vY03u98xotxeRur_995U4Ugk3IXrsW5uGR1BtvhuPhY'
 spreadsheet = client.open_by_key(planilha_id)
 worksheet = spreadsheet.sheet1
 
@@ -181,16 +181,16 @@ def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
         nome_correspondente = encontrar_nome_semelhante(nome_cliente_pedido, clientes)
         id_cliente = clientes.get(nome_correspondente, '') if nome_correspondente else 'CLIENT ID NOT FOUND'
         id_pedido = pedido.get('id', 'N/A')
-        codigo_rastreamento = pedido.get('tracking_info', {}).get('tracking_code', 'N/A')
-        status_rastreamento = pedido.get('tracking_info', {}).get('status', 'N/A')
+        codigo_rastreamento = pedido.get('tracking_info', {}).get('tracking_code', 'N/A')  # Certifique-se de que o caminho está correto
+        status_rastreamento = pedido.get('tracking_info', {}).get('status', 'N/A')  # Certifique-se de que o caminho está correto
 
         if id_pedido not in ids_adicionados:
             lista_pedidos.append([
                 id_cliente,
                 nome_correspondente or nome_cliente_pedido,
                 id_pedido,
-                codigo_rastreamento,
-                status_rastreamento,
+                codigo_rastreamento,  # Este campo deve aparecer
+                status_rastreamento,  # Este campo deve aparecer
                 pedido.get('service', {}).get('company', {}).get('name', 'N/A'),
                 pedido.get('updated_at', 'N/A'),
                 pedido.get('to', {}).get('phone', 'N/A')
@@ -201,6 +201,7 @@ def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
     worksheet.clear()  
     worksheet.append_row(["ID do Cliente", "Nome do Cliente", "ID do Pedido", "Código de Rastreamento", "Status de Rastreamento", "Transportadora", "Data de Atualização", "Telefone do Cliente"])
     worksheet.append_rows(lista_pedidos, value_input_option='USER_ENTERED')
+
 
     print("Planilha atualizada com sucesso!")
 
