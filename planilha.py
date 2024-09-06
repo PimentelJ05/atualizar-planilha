@@ -25,7 +25,7 @@ credenciais = Credentials.from_service_account_info(credentials_info, scopes=sco
 client = gspread.authorize(credenciais)
 
 # Acessar a planilha do Google Sheets (ID da sua planilha)
-planilha_id = '1vY03u98xotxeRur_995U4Ugk3IXrsW5uGR1BtvhuPhY'
+planilha_id = '1-_lGGdU1gH_IkehJrUPydfQ_KxW3J_R9rAS-5dLyGFA'
 spreadsheet = client.open_by_key(planilha_id)
 worksheet = spreadsheet.sheet1
 
