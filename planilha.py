@@ -148,16 +148,17 @@ def obter_todos_pedidos():
 
         dados = response.json()
         pedidos = dados.get('data', [])
-        for pedido in pedidos:
-            print(pedido)  # Debug: Visualizando a estrutura do pedido para encontrar o código de rastreamento
         if not pedidos:
             break
-        todos_pedidos.extend(pedidos)
+        for pedido in pedidos:
+            detalhes = obter_detalhes_pedido(pedido['id'])  # Obtém detalhes para cada pedido
+            # Ajuste o campo correto conforme o retorno dos detalhes do pedido
+            pedido['tracking_code'] = detalhes.get('tracking_code', 'N/A')  # Ajuste o caminho conforme necessário
+            todos_pedidos.append(pedido)
         pagina += 1
 
-    print("Pedidos obtidos do Melhor Envio:", todos_pedidos)
+    print("Pedidos obtidos do Melhor Envio com detalhes:", todos_pedidos)
     return todos_pedidos
-
 
 # Função para encontrar o nome mais próximo usando fuzzy matching
 def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
