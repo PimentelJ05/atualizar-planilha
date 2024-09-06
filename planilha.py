@@ -197,5 +197,13 @@ def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
 
     print("Planilha atualizada com sucesso!")
 
+# Verifica se há pedidos e clientes antes de atualizar a planilha
+clientes = obter_nomes_ids_clientes()
+pedidos = obter_todos_pedidos()
+
+if pedidos and clientes:
+    atualizar_planilha_google_sheets(pedidos, clientes, worksheet)
+    print("Planilha atualizada com sucesso!")
 else:
     print("Nenhum pedido ou cliente encontrado para salvar.")
+
