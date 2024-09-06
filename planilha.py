@@ -44,7 +44,8 @@ refresh_token = 'def50200cc347aa16bbf2326ff0a2b659e52abe511a1bc1d2bb773a9f8363fb
 
 # Função para obter o código de rastreio de um pedido específico
 def obter_codigo_rastreio(id_pedido):
-    url = f"https://www.melhorenvio.com.br/api/v2/me/shipment/tracking/{id_pedido}"
+    # Linha para ajustar a URL
+    url = f"https://www.melhorenvio.com.br/api/v2/me/shipment/tracking?orders={id_pedido}"
     headers = {
         "Accept": "application/json",
         "Authorization": f"Bearer {access_token}",
@@ -53,7 +54,9 @@ def obter_codigo_rastreio(id_pedido):
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
         tracking_info = response.json()
-        return tracking_info.get('tracking', [{}])[0].get('tracking_code', 'Não disponível')
+        # Extraindo o código de rastreio corretamente
+        if tracking_info and 'data' in tracking_info:
+            return tracking_info['data'][0].get('tracking_code', 'Não disponível')
     else:
         print(f"Erro ao obter código de rastreio para o pedido {id_pedido}: {response.status_code} - {response.text}")
         return 'Erro'
@@ -132,7 +135,9 @@ def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
         nome_cliente_pedido = pedido.get('to', {}).get('name', 'N/A')
         nome_correspondente = process.extractOne(nome_cliente_pedido, list(clientes.keys()))[0] if clientes else None
         id_cliente = clientes.get(nome_correspondente, 'CLIENT ID NOT FOUND') if nome_correspondente else 'CLIENT ID NOT FOUND'
-        codigo_rastreio = obter_codigo_rastreio(id_pedido)  # Obtendo o código de rastreio automaticamente
+        
+        # Chama a função para obter o código de rastreio
+        codigo_rastreio = obter_codigo_rastreio(id_pedido)
 
         if id_pedido not in ids_adicionados:
             lista_pedidos.append([
@@ -150,6 +155,7 @@ def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
     worksheet.clear()
     worksheet.append_row(["ID do Cliente", "Nome do Cliente", "ID do Pedido", "Status do Pedido", "Transportadora", "Data de Atualização", "Telefone do Cliente", "Código de Rastreio"])
     worksheet.append_rows(lista_pedidos, value_input_option='USER_ENTERED')
+
 
 # Executando as funções para obter dados e atualizar a planilha
 clientes = obter_nomes_ids_clientes()
