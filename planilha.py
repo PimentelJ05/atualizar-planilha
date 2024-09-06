@@ -81,12 +81,12 @@ def obter_nomes_ids_clientes():
     return {}
     
     def obter_detalhes_pedido(order_id):
-    url = f"https://www.melhorenvio.com.br/api/v2/me/orders/{order_id}"
-    headers = {
-        "Accept": "application/json",
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {access_token}",
-        "User-Agent": "Planilha Crédito Essencial (julia.pimentel@creditoessencial.com.br)"
+        url = f"https://www.melhorenvio.com.br/api/v2/me/orders/{order_id}"
+        headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {access_token}",
+            "User-Agent": "Planilha Crédito Essencial (julia.pimentel@creditoessencial.com.br)"
     }
     
     response = requests.get(url, headers=headers)
