@@ -89,15 +89,15 @@ def obter_nomes_ids_clientes():
     return {}
 
 # Função para obter todos os pedidos do Melhor Envio
-def obter_todos_pedidos():
-    base_url = "https://www.melhorenvio.com.br/api/v2/me/orders"
+def obter_todos_pedidos_com_rastreamento():
+    url = "https://www.melhorenvio.com.br/api/v2/me/orders"
     headers = {
         "Accept": "application/json",
-        "Content-Type": "application/json",
         "Authorization": f"Bearer {access_token}",
         "User-Agent": "Planilha Crédito Essencial (julia.pimentel@creditoessencial.com.br)"
     }
-    todos_pedidos = []
+    pedidos_com_rastreamento = []
+    
     pagina = 1
 
     while True:
