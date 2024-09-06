@@ -46,7 +46,7 @@ def refresh_access_token(refresh_token):
 
 # Função para obter o código de rastreio de um pedido específico
 def obter_codigo_rastreio(id_pedido):
-    url = f"https://www.melhorenvio.com.br/api/v2/me/shipment/tracking?orders={id_pedido}"
+    url = f"https://www.melhorenvio.com.br/api/v2/me/shipment/tracking"
     headers = {
         "Accept": "application/json",
         "Authorization": f"Bearer {access_token}",
