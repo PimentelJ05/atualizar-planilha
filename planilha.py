@@ -165,24 +165,15 @@ def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
         id_cliente = clientes.get(nome_correspondente, '') if nome_correspondente else 'CLIENT ID NOT FOUND'
         id_pedido = pedido.get('id', 'N/A')
         
-        # Verifica se o código de rastreamento está presente
-        if 'tracking_info' in pedido and 'tracking_code' in pedido['tracking_info']:
-            codigo_rastreamento = pedido['tracking_info'].get('tracking_code', 'N/A')
-        else:
-            codigo_rastreamento = "não foi possível localizar o código"
-
-        # Verifica se o status de rastreamento está presente
-        if 'tracking_info' in pedido and 'status' in pedido['tracking_info']:
-            status_rastreamento = pedido['tracking_info'].get('status', 'N/A')
-        else:
-            status_rastreamento = "não foi possível localizar o status"
+        # Extração do código de rastreamento e status diretamente dos pedidos
+        codigo_rastreamento = pedido.get('tracking_code', 'não foi possível localizar o código')
+        status_rastreamento = pedido.get('status', 'não foi possível localizar o status')
 
         if id_pedido not in ids_adicionados:
             lista_pedidos.append([
                 id_cliente,
                 nome_correspondente or nome_cliente_pedido,
                 id_pedido,
-                codigo_rastreamento,
                 status_rastreamento,
                 pedido.get('service', {}).get('company', {}).get('name', 'N/A'),
                 pedido.get('updated_at', 'N/A'),
@@ -192,7 +183,7 @@ def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
 
     # Limpar dados existentes e adicionar cabeçalhos
     worksheet.clear()  
-    worksheet.append_row(["ID do Cliente", "Nome do Cliente", "ID do Pedido", "Código de Rastreamento", "Status de Rastreamento", "Transportadora", "Data de Atualização", "Telefone do Cliente"])
+    worksheet.append_row(["ID do Cliente", "Nome do Cliente", "ID do Pedido", "Status do Pedido", "Transportadora", "Data de Atualização", "Telefone do Cliente"])
     worksheet.append_rows(lista_pedidos, value_input_option='USER_ENTERED')
 
     print("Planilha atualizada com sucesso!")
