@@ -2,7 +2,6 @@ import os
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import requests
-import json
 
 # Carregar credenciais do ambiente
 GOOGLE_CREDENTIALS_PATH = os.getenv('GOOGLE_CREDENTIALS')
@@ -17,7 +16,7 @@ def obter_credenciais_google():
 
 # Função para enviar mensagem pelo Kommo
 def enviar_mensagem_kommo(numero_cliente, mensagem):
-    url = "https://creditoessencial.kommo.com/chats/"
+    url = "https://creditoessencial.kommo.com/chats/"  # Verifique a URL de envio
     headers = {
         "Authorization": f"Bearer {KOMMO_API_TOKEN}",
         "Content-Type": "application/json"
@@ -26,8 +25,13 @@ def enviar_mensagem_kommo(numero_cliente, mensagem):
         "to": numero_cliente,
         "message": mensagem
     }
-    response = requests.post(url, json=payload, headers=headers)
-    return response.json()
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+        response.raise_for_status()  # Lança um erro se a resposta for um código de erro HTTP
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"Erro ao enviar mensagem para {numero_cliente}: {e}")
+        return None
 
 # Dicionário de tradução de status
 status_traducao = {
@@ -58,7 +62,8 @@ def processar_planilha():
                         f"Obrigado por escolher nossos serviços!")
             
             resposta = enviar_mensagem_kommo(numero_cliente, mensagem)
-            print(f"Mensagem enviada para {numero_cliente}: {resposta}")
+            if resposta:
+                print(f"Mensagem enviada para {numero_cliente}: {resposta}")
 
 if __name__ == "__main__":
     processar_planilha()
