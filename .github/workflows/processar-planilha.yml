@@ -1,4 +1,4 @@
-name: Verificar e Enviar Mensagens
+name: processar-planilha
 
 on:
   schedule:
