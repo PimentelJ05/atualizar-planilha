@@ -41,6 +41,10 @@ melhor_envio_client_id = os.getenv('MELHOR_ENVIO_CLIENT_ID')
 melhor_envio_client_secret = os.getenv('MELHOR_ENVIO_CLIENT_SECRET')
 kommo_access_token = os.getenv('KOMMO_ACCESS_TOKEN').strip()
 
+# Função para normalizar nomes
+def normalizar_nome(nome):
+    return nome.strip().lower()
+
 # Função para obter os nomes e IDs dos clientes do Kommo
 def obter_nomes_ids_clientes():
     api_url = 'https://creditoessencial.kommo.com/api/v4/contacts'
@@ -52,11 +56,10 @@ def obter_nomes_ids_clientes():
 
     if response.status_code == 200:
         contacts = response.json()['_embedded']['contacts']
-        clientes = {contact['name']: contact['id'] for contact in contacts}
+        # Normaliza os nomes dos clientes para melhor correspondência
+        clientes = {normalizar_nome(contact['name']): contact['id'] for contact in contacts}
         print(f"Clientes obtidos do Kommo: {len(clientes)}")
         return clientes
-    elif response.status_code == 401:
-        print(f"Erro ao obter contatos: {response.status_code} - {response.text}")
     else:
         print(f"Erro ao obter contatos: {response.status_code} - {response.text}")
     return {}
@@ -96,8 +99,8 @@ def obter_todos_pedidos():
 # Função para encontrar o nome mais próximo usando fuzzy matching
 def encontrar_nome_semelhante(nome_cliente_pedido, clientes):
     nomes_kommo = list(clientes.keys())
-    nome_correspondente, pontuacao = process.extractOne(nome_cliente_pedido, nomes_kommo)
-    if pontuacao > 90:
+    nome_correspondente, pontuacao = process.extractOne(normalizar_nome(nome_cliente_pedido), nomes_kommo)
+    if pontuacao > 80:  # Ajuste de sensibilidade para correspondência
         return nome_correspondente
     return None
 
@@ -109,7 +112,7 @@ def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
     for pedido in pedidos:
         nome_cliente_pedido = pedido.get('to', {}).get('name', 'N/A')
         nome_correspondente = encontrar_nome_semelhante(nome_cliente_pedido, clientes)
-        id_cliente = clientes.get(nome_correspondente, '') if nome_correspondente else 'CLIENT ID NOT FOUND'
+        id_cliente = clientes.get(nome_correspondente, 'CLIENT ID NOT FOUND')
         id_pedido = pedido.get('id', 'N/A')
 
         if id_pedido not in ids_adicionados:
