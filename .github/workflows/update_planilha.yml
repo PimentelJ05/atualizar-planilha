@@ -3,9 +3,9 @@ name: Run CONTROLEMELHORENVIO
 on:
   push:
     branches:
-      - main  # Substitua pela sua branch principal se for diferente
+      - main  # Substitua pela sua branch principal
   schedule:
-    - cron: '0 0 * * *'  # Agenda para rodar diariamente à meia-noite (Ajuste conforme necessário)
+    - cron: '0 0 * * *'  # Configuração para rodar diariamente à meia-noite
 
 jobs:
   run-script:
@@ -18,7 +18,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x'  # Use a versão do Python compatível com o seu script
+          python-version: '3.x'  # Ajuste para a versão de Python necessária
 
       - name: Install dependencies
         run: |
@@ -31,4 +31,4 @@ jobs:
           MELHOR_ENVIO_CLIENT_ID: ${{ secrets.MELHOR_ENVIO_CLIENT_ID }}
           MELHOR_ENVIO_CLIENT_SECRET: ${{ secrets.MELHOR_ENVIO_CLIENT_SECRET }}
         run: |
-          python CONTROLEMELHORENVIO.py
+          python CONTROLEMELHORENVIO.py  # Ajuste o caminho se necessário
