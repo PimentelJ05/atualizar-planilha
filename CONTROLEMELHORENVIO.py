@@ -3,7 +3,7 @@ import json
 import requests
 import gspread
 from google.oauth2.service_account import Credentials
-from fuzzywuzzy import process, fuzz  # Importando fuzz corretamente
+from fuzzywuzzy import process
 
 # Lendo as credenciais do Google Sheets do ambiente
 credentials_json = os.environ.get("GOOGLE_CREDENTIALS")
@@ -96,22 +96,13 @@ def obter_todos_pedidos():
     print(f"Pedidos obtidos do Melhor Envio: {len(todos_pedidos)}")
     return todos_pedidos
 
-# Função para encontrar o nome mais próximo usando fuzzy matching com alto grau de sensibilidade
+# Função para encontrar o nome mais próximo usando fuzzy matching
 def encontrar_nome_semelhante(nome_cliente_pedido, clientes):
     nomes_kommo = list(clientes.keys())
     nome_correspondente, pontuacao = process.extractOne(normalizar_nome(nome_cliente_pedido), nomes_kommo)
-    
-    # Ajustar para maior sensibilidade com fallback para correspondências próximas
-    if pontuacao >= 90:
+    if pontuacao > 80:  # Ajuste de sensibilidade para correspondência
         return nome_correspondente
-    elif pontuacao >= 80:  # Considera correspondências próximas para evitar "not found"
-        print(f"Correspondência próxima encontrada para '{nome_cliente_pedido}': '{nome_correspondente}' com pontuação {pontuacao}.")
-        return nome_correspondente
-    
-    # Última tentativa: encontrar o mais próximo possível usando fuzz.WRatio
-    nome_fallback, _ = process.extractOne(normalizar_nome(nome_cliente_pedido), nomes_kommo, scorer=fuzz.WRatio)  # Usando 'fuzz.WRatio'
-    print(f"Usando correspondência de fallback para '{nome_cliente_pedido}': '{nome_fallback}'.")
-    return nome_fallback
+    return None
 
 # Função para atualizar a planilha com os dados dos clientes e pedidos
 def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
