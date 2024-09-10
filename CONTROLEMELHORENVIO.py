@@ -97,7 +97,7 @@ def obter_todos_pedidos():
 def encontrar_nome_semelhante(nome_cliente_pedido, clientes):
     nomes_kommo = list(clientes.keys())
     nome_correspondente, pontuacao = process.extractOne(nome_cliente_pedido, nomes_kommo)
-    if pontuacao > 85:
+    if pontuacao > 90:
         return nome_correspondente
     return None
 
