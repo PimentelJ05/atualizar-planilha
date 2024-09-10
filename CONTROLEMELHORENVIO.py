@@ -47,6 +47,7 @@ def normalizar_nome(nome):
     nome = nome.strip().lower()
     nome = ''.join(c for c in unicodedata.normalize('NFD', nome) if unicodedata.category(c) != 'Mn')  # Remove acentuação
     nome = nome.replace('\u200b', '')  # Remove caracteres invisíveis como zero-width space
+    nome = ' '.join(nome.split())  # Remove espaços extras
     return nome
 
 # Função para obter os nomes e IDs dos clientes do Kommo
@@ -104,8 +105,14 @@ def obter_todos_pedidos():
 def encontrar_nome_semelhante(nome_cliente_pedido, clientes):
     nomes_kommo = list(clientes.keys())
     nome_cliente_normalizado = normalizar_nome(nome_cliente_pedido)
-    nome_correspondente, pontuacao = process.extractOne(nome_cliente_normalizado, nomes_kommo)
     
+    # Diagnóstico de Comparação Direta
+    if nome_cliente_normalizado in clientes:
+        print(f"Correspondência exata encontrada sem fuzzy: '{nome_cliente_normalizado}'")
+        return nome_cliente_normalizado
+
+    # Correspondência fuzzy
+    nome_correspondente, pontuacao = process.extractOne(nome_cliente_normalizado, nomes_kommo)
     print(f"Comparando: '{nome_cliente_normalizado}' com '{nome_correspondente}', Pontuação: {pontuacao}")
     
     if pontuacao > 90:  # Mantendo o limiar de 90 para alta precisão
