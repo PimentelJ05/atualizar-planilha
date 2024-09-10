@@ -3,7 +3,6 @@ import json
 import requests
 import gspread
 from google.oauth2.service_account import Credentials
-from fuzzywuzzy import process
 import unicodedata
 
 # Lendo as credenciais do Google Sheets do ambiente
@@ -38,16 +37,16 @@ worksheet = spreadsheet.sheet1
 
 # Variáveis de tokens do Melhor Envio e Kommo
 melhor_envio_access_token = os.getenv('MELHOR_ENVIO_ACCESS_TOKEN').strip()
-melhor_envio_client_id = os.getenv('MELHOR_ENVIO_CLIENT_ID')
-melhor_envio_client_secret = os.getenv('MELHOR_ENVIO_CLIENT_SECRET')
 kommo_access_token = os.getenv('KOMMO_ACCESS_TOKEN').strip()
 
 # Função para normalizar nomes
 def normalizar_nome(nome):
-    nome = nome.strip().lower()
-    nome = ''.join(c for c in unicodedata.normalize('NFD', nome) if unicodedata.category(c) != 'Mn')  # Remove acentuação
+    # Remove acentos, converte para minúsculas, e remove espaços extras
+    nome = unicodedata.normalize('NFKD', nome)  # Normaliza em formato compatível
+    nome = ''.join(c for c in nome if unicodedata.category(c) != 'Mn')  # Remove acentos
+    nome = nome.lower()  # Converte para minúsculas
     nome = nome.replace('\u200b', '')  # Remove caracteres invisíveis como zero-width space
-    nome = ' '.join(nome.split())  # Remove espaços extras
+    nome = ' '.join(nome.split())  # Remove múltiplos espaços
     return nome
 
 # Função para obter os nomes e IDs dos clientes do Kommo
@@ -101,22 +100,17 @@ def obter_todos_pedidos():
     print(f"Pedidos obtidos do Melhor Envio: {len(todos_pedidos)}")
     return todos_pedidos
 
-# Função para encontrar o nome mais próximo usando fuzzy matching
+# Função para encontrar o nome correspondente usando normalização
 def encontrar_nome_semelhante(nome_cliente_pedido, clientes):
-    nomes_kommo = list(clientes.keys())
     nome_cliente_normalizado = normalizar_nome(nome_cliente_pedido)
-    
-    # Diagnóstico de Comparação Direta
+    print(f"Nome do pedido normalizado: '{nome_cliente_normalizado}'")
+
+    # Comparação direta após normalização
     if nome_cliente_normalizado in clientes:
-        print(f"Correspondência exata encontrada sem fuzzy: '{nome_cliente_normalizado}'")
+        print(f"Correspondência exata encontrada: '{nome_cliente_normalizado}'")
         return nome_cliente_normalizado
 
-    # Correspondência fuzzy
-    nome_correspondente, pontuacao = process.extractOne(nome_cliente_normalizado, nomes_kommo)
-    print(f"Comparando: '{nome_cliente_normalizado}' com '{nome_correspondente}', Pontuação: {pontuacao}")
-    
-    if pontuacao > 88:  # Mantendo o limiar de 90 para alta precisão
-        return nome_correspondente
+    print(f"Correspondência não encontrada para: '{nome_cliente_normalizado}'")
     return None
 
 # Função para atualizar a planilha com os dados dos clientes e pedidos
