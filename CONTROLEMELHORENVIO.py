@@ -3,7 +3,7 @@ import json
 import requests
 import gspread
 from google.oauth2.service_account import Credentials
-from fuzzywuzzy import process
+from fuzzywuzzy import process, fuzz
 
 # Lendo as credenciais do Google Sheets do ambiente
 credentials_json = os.environ.get("GOOGLE_CREDENTIALS")
