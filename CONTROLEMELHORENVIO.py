@@ -4,6 +4,7 @@ import requests
 import gspread
 from google.oauth2.service_account import Credentials
 from fuzzywuzzy import process
+import unicodedata
 
 # Lendo as credenciais do Google Sheets do ambiente
 credentials_json = os.environ.get("GOOGLE_CREDENTIALS")
@@ -43,7 +44,10 @@ kommo_access_token = os.getenv('KOMMO_ACCESS_TOKEN').strip()
 
 # Função para normalizar nomes
 def normalizar_nome(nome):
-    return nome.strip().lower()
+    nome = nome.strip().lower()
+    nome = ''.join(c for c in unicodedata.normalize('NFD', nome) if unicodedata.category(c) != 'Mn')  # Remove acentuação
+    nome = nome.replace('\u200b', '')  # Remove caracteres invisíveis como zero-width space
+    return nome
 
 # Função para obter os nomes e IDs dos clientes do Kommo
 def obter_nomes_ids_clientes():
@@ -99,8 +103,12 @@ def obter_todos_pedidos():
 # Função para encontrar o nome mais próximo usando fuzzy matching
 def encontrar_nome_semelhante(nome_cliente_pedido, clientes):
     nomes_kommo = list(clientes.keys())
-    nome_correspondente, pontuacao = process.extractOne(normalizar_nome(nome_cliente_pedido), nomes_kommo)
-    if pontuacao > 90:  # Ajuste de sensibilidade para correspondência
+    nome_cliente_normalizado = normalizar_nome(nome_cliente_pedido)
+    nome_correspondente, pontuacao = process.extractOne(nome_cliente_normalizado, nomes_kommo)
+    
+    print(f"Comparando: '{nome_cliente_normalizado}' com '{nome_correspondente}', Pontuação: {pontuacao}")
+    
+    if pontuacao > 90:  # Mantendo o limiar de 90 para alta precisão
         return nome_correspondente
     return None
 
