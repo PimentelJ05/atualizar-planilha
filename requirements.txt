@@ -3,3 +3,5 @@ gspread
 google-auth
 fuzzywuzzy[speedup]
 unidecode
+python-Levenshtein
+unicodedata
