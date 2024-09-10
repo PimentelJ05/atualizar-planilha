@@ -101,15 +101,19 @@ def obter_todos_pedidos():
 
 # Função para encontrar o nome mais próximo usando fuzzy matching com alta precisão
 def encontrar_nome_semelhante(nome_cliente_pedido, clientes):
-    nomes_kommo = list(clientes.keys())
     nome_cliente_normalizado = normalizar_nome(nome_cliente_pedido)
 
+    # Verificar se o nome normalizado está no dicionário de clientes
+    if nome_cliente_normalizado in clientes:
+        print(f"Correspondência exata encontrada para '{nome_cliente_pedido}' como '{nome_cliente_normalizado}'.")
+        return nome_cliente_normalizado
+
     # Usando WRatio para uma correspondência mais robusta
-    nome_correspondente, pontuacao = process.extractOne(nome_cliente_normalizado, nomes_kommo, scorer=fuzz.WRatio)
+    nome_correspondente, pontuacao = process.extractOne(nome_cliente_normalizado, list(clientes.keys()), scorer=fuzz.WRatio)
     
     # Se a correspondência for igual ou superior a 90%, retorna o nome correspondente
     if pontuacao >= 90:
-        print(f"Correspondência encontrada para '{nome_cliente_pedido}': '{nome_correspondente}' com pontuação {pontuacao}.")
+        print(f"Correspondência fuzzy encontrada para '{nome_cliente_pedido}': '{nome_correspondente}' com pontuação {pontuacao}.")
         return nome_correspondente
     
     print(f"Nenhuma correspondência suficiente encontrada para '{nome_cliente_pedido}' (Pontuação: {pontuacao}).")
