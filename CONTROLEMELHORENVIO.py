@@ -3,8 +3,7 @@ import json
 import requests
 import gspread
 from google.oauth2.service_account import Credentials
-import unicodedata
-from fuzzywuzzy import fuzz
+from fuzzywuzzy import process
 
 # Lendo as credenciais do Google Sheets do ambiente
 credentials_json = os.environ.get("GOOGLE_CREDENTIALS")
@@ -44,14 +43,7 @@ kommo_access_token = os.getenv('KOMMO_ACCESS_TOKEN').strip()
 
 # Função para normalizar nomes
 def normalizar_nome(nome):
-    # Remove acentos, converte para minúsculas, e remove espaços extras
-    nome = unicodedata.normalize('NFKD', nome)
-    nome = ''.join(c for c in nome if unicodedata.category(c) != 'Mn')  # Remove acentos
-    nome = nome.lower()  # Converte para minúsculas
-    nome = nome.replace('\u200b', '')  # Remove caracteres invisíveis como zero-width space
-    nome = ''.join(e for e in nome if e.isalnum() or e.isspace())  # Remove caracteres especiais
-    nome = ' '.join(nome.split())  # Remove múltiplos espaços
-    return nome
+    return nome.strip().lower()
 
 # Função para obter os nomes e IDs dos clientes do Kommo
 def obter_nomes_ids_clientes():
@@ -64,6 +56,7 @@ def obter_nomes_ids_clientes():
 
     if response.status_code == 200:
         contacts = response.json()['_embedded']['contacts']
+        # Normaliza os nomes dos clientes para melhor correspondência
         clientes = {normalizar_nome(contact['name']): contact['id'] for contact in contacts}
         print(f"Clientes obtidos do Kommo: {len(clientes)}")
         return clientes
@@ -103,27 +96,12 @@ def obter_todos_pedidos():
     print(f"Pedidos obtidos do Melhor Envio: {len(todos_pedidos)}")
     return todos_pedidos
 
-# Função para encontrar o nome correspondente usando fuzzy matching ajustado
+# Função para encontrar o nome mais próximo usando fuzzy matching
 def encontrar_nome_semelhante(nome_cliente_pedido, clientes):
-    nome_cliente_normalizado = normalizar_nome(nome_cliente_pedido)
-    print(f"Nome do pedido normalizado: '{nome_cliente_normalizado}'")
-
-    # Comparação direta após normalização usando uma abordagem mais tolerante com token_sort_ratio
-    melhor_match = None
-    melhor_pontuacao = 0
-    for nome_kommo, id_cliente in clientes.items():
-        # Usando uma correspondência fuzzy token sort ratio para tolerar pequenas variações e ordem
-        pontuacao = fuzz.token_sort_ratio(nome_cliente_normalizado, nome_kommo)
-        print(f"Comparando '{nome_cliente_normalizado}' com '{nome_kommo}' - Pontuação: {pontuacao}")
-        if pontuacao > melhor_pontuacao:
-            melhor_match = nome_kommo
-            melhor_pontuacao = pontuacao
-
-    if melhor_pontuacao > 80:  # Ajuste o limite conforme necessário
-        print(f"Correspondência fuzzy encontrada: '{nome_cliente_normalizado}' -> '{melhor_match}' com pontuação {melhor_pontuacao}")
-        return melhor_match
-
-    print(f"Correspondência não encontrada para: '{nome_cliente_normalizado}'")
+    nomes_kommo = list(clientes.keys())
+    nome_correspondente, pontuacao = process.extractOne(normalizar_nome(nome_cliente_pedido), nomes_kommo)
+    if pontuacao > 80:  # Ajuste de sensibilidade para correspondência
+        return nome_correspondente
     return None
 
 # Função para atualizar a planilha com os dados dos clientes e pedidos
