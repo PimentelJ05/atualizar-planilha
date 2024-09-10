@@ -40,7 +40,7 @@ status_traducao = {
 # Função para processar a planilha e enviar mensagens
 def processar_planilha():
     client = obter_credenciais_google()
-    sheet = client.open_by_key("YOUR_SHEET_ID").sheet1  # Abre a planilha pelo ID
+    sheet = client.open_by_key("1mRNwU-h9EUxYmtG8WNfDLMI8fqWviKGYEERD4k5aegY").sheet1  # Abre a planilha pelo ID
     dados = sheet.get_all_records()  # Obtendo todos os dados da planilha
     
     for linha in dados:
