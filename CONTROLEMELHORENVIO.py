@@ -115,7 +115,7 @@ def encontrar_nome_semelhante(nome_cliente_pedido, clientes):
     nome_correspondente, pontuacao = process.extractOne(nome_cliente_normalizado, nomes_kommo)
     print(f"Comparando: '{nome_cliente_normalizado}' com '{nome_correspondente}', Pontuação: {pontuacao}")
     
-    if pontuacao > 90:  # Mantendo o limiar de 90 para alta precisão
+    if pontuacao > 88:  # Mantendo o limiar de 90 para alta precisão
         return nome_correspondente
     return None
 
