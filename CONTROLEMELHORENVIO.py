@@ -4,6 +4,7 @@ import requests
 import gspread
 from google.oauth2.service_account import Credentials
 import unicodedata
+from fuzzywuzzy import fuzz
 
 # Lendo as credenciais do Google Sheets do ambiente
 credentials_json = os.environ.get("GOOGLE_CREDENTIALS")
@@ -42,7 +43,7 @@ kommo_access_token = os.getenv('KOMMO_ACCESS_TOKEN').strip()
 # Função para normalizar nomes
 def normalizar_nome(nome):
     # Remove acentos, converte para minúsculas, e remove espaços extras
-    nome = unicodedata.normalize('NFKD', nome)  # Normaliza em formato compatível
+    nome = unicodedata.normalize('NFKD', nome)
     nome = ''.join(c for c in nome if unicodedata.category(c) != 'Mn')  # Remove acentos
     nome = nome.lower()  # Converte para minúsculas
     nome = nome.replace('\u200b', '')  # Remove caracteres invisíveis como zero-width space
@@ -60,7 +61,6 @@ def obter_nomes_ids_clientes():
 
     if response.status_code == 200:
         contacts = response.json()['_embedded']['contacts']
-        # Normaliza os nomes dos clientes para melhor correspondência
         clientes = {normalizar_nome(contact['name']): contact['id'] for contact in contacts}
         print(f"Clientes obtidos do Kommo: {len(clientes)}")
         return clientes
@@ -100,15 +100,17 @@ def obter_todos_pedidos():
     print(f"Pedidos obtidos do Melhor Envio: {len(todos_pedidos)}")
     return todos_pedidos
 
-# Função para encontrar o nome correspondente usando normalização
+# Função para encontrar o nome correspondente usando fuzzy matching
 def encontrar_nome_semelhante(nome_cliente_pedido, clientes):
     nome_cliente_normalizado = normalizar_nome(nome_cliente_pedido)
     print(f"Nome do pedido normalizado: '{nome_cliente_normalizado}'")
 
     # Comparação direta após normalização
-    if nome_cliente_normalizado in clientes:
-        print(f"Correspondência exata encontrada: '{nome_cliente_normalizado}'")
-        return nome_cliente_normalizado
+    for nome_kommo, id_cliente in clientes.items():
+        # Usando uma correspondência fuzzy para tolerar pequenas variações
+        if fuzz.ratio(nome_cliente_normalizado, nome_kommo) > 90:
+            print(f"Correspondência fuzzy encontrada: '{nome_cliente_normalizado}' -> '{nome_kommo}'")
+            return nome_kommo
 
     print(f"Correspondência não encontrada para: '{nome_cliente_normalizado}'")
     return None
