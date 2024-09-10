@@ -1,29 +1,26 @@
-name: Processar Planilha
+name: Verificar e Enviar Mensagens
 
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+  schedule:
+    - cron: '0 * * * *'  # Executa a cada hora
 
 jobs:
-  processar:
+  check_and_send:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout do código
+    - name: Check out repository
       uses: actions/checkout@v3
 
-    - name: Configurar Python
+    - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.9'  # ou a versão que você estiver usando
+        python-version: '3.9'
 
-    - name: Instalar dependências
+    - name: Install dependencies
       run: |
         pip install gspread oauth2client requests
 
-    - name: Executar script
+    - name: Run script
       env:
         GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
         KOMMO_API_TOKEN: ${{ secrets.KOMMO_API_TOKEN }}
