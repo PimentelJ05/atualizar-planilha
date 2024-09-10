@@ -3,7 +3,7 @@ import json
 import requests
 import gspread
 from google.oauth2.service_account import Credentials
-from fuzzywuzzy import process, fuzz
+from fuzzywuzzy import process, fuzz  # Importando fuzz corretamente
 
 # Lendo as credenciais do Google Sheets do ambiente
 credentials_json = os.environ.get("GOOGLE_CREDENTIALS")
@@ -108,8 +108,8 @@ def encontrar_nome_semelhante(nome_cliente_pedido, clientes):
         print(f"Correspondência próxima encontrada para '{nome_cliente_pedido}': '{nome_correspondente}' com pontuação {pontuacao}.")
         return nome_correspondente
     
-    # Última tentativa: encontrar o mais próximo possível, sem limitar a pontuação mínima, para evitar casos de not found
-    nome_fallback, _ = process.extractOne(normalizar_nome(nome_cliente_pedido), nomes_kommo, scorer=process.WRatio)
+    # Última tentativa: encontrar o mais próximo possível usando fuzz.WRatio
+    nome_fallback, _ = process.extractOne(normalizar_nome(nome_cliente_pedido), nomes_kommo, scorer=fuzz.WRatio)  # Usando 'fuzz.WRatio'
     print(f"Usando correspondência de fallback para '{nome_cliente_pedido}': '{nome_fallback}'.")
     return nome_fallback
 
