@@ -6,7 +6,7 @@ from google.oauth2.service_account import Credentials
 from fuzzywuzzy import process
 
 # Lendo as credenciais do Google Sheets do ambiente
-credentials_json = os.getenv("GOOGLE_CREDENTIALS")
+credentials_json = os.environ.get("GOOGLE_CREDENTIALS")
 
 # Verificando se as credenciais foram carregadas corretamente
 if not credentials_json:
@@ -35,16 +35,11 @@ planilha_id = '1mRNwU-h9EUxYmtG8WNfDLMI8fqWviKGYEERD4k5aegY'
 spreadsheet = client.open_by_key(planilha_id)
 worksheet = spreadsheet.sheet1
 
-
-# Variáveis de tokens do Melhor Envio
-melhor_envio_access_token = os.getenv('eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxNTg5NyIsImp0aSI6ImIwNTU3ZjViYWJiZmQ4Y2JlMTM1MGYzMTBiODk5OTQ5OTk1ODgxYzIzNzhiMjcwMGI4ZTA2MTVmOWUyNDRjYTJiODc0YmM1OGM0YTc0Mzk5IiwiaWF0IjoxNzI1NTQzMjA4Ljk1NjgsIm5iZiI6MTcyNTU0MzIwOC45NTY4MDIsImV4cCI6MTcyODEzNTIwOC44ODM0NjQsInN1YiI6IjljNzMxYmY1LTA5OGItNDFiMy1iYzczLWJjYzFiOWQ3MWFkMCIsInNjb3BlcyI6WyJjYXJ0LXJlYWQiLCJjYXJ0LXdyaXRlIl19.sDfnwkohO72MNIn5vd-2mDVl50ftG3SNxVlchOmgmCkiHD69PUkkNbiX702ZzvcJdRDoSzUWgdUGwHesISAUOwqXhDfB3RU7XEA1gIFtbTosNlgHksalbCU7Aev7FO0mdyahCAjzMo8nydGHqcsb2cuM02zC3I2O1esAi_ZmSoqUI37AyAyiwlpb46LDRobgi88qzoowiQb5FQ93yQjfI55XTtAXJ2WSa23r9LHSxROp8VU7jlVJH-tLtBYNHrfAK5YrNYl7j--ZzKch_4atQBKmLtDWNzchKmEzBu_IyUdBdee-nYnN6PXzwJgitjLXRS1aoSvAytAwyHZcllNys9qsKf8MgL7yqnY5rEBn3IHC9A6Cj6NQiyBm8x4J0K-H6lnmabLyQ0ZG6zWoYopT9oihYNUBueoYhczqxuwx4h0SGFpLGGWZtq_yGOJbOu5_2ujDG9NjHdKnuBEzJbCAEMLr1VMnwZzKBBq7KF6mfpa7njWrC6Shsj_Env_Z5o2WIctbuBuy6WBDJmd8VgR0lRdi8UXcicD-s9SPyToYDnvmTBmqdJOS7alj2cdX3viPw42dSJ3I1eRL19MXxdNkpm-JzEmFNU5uNJi5trxqG9FRhNN-bthRixhB6EhwDX9MHYawTX14Q2j4NZNeCu2QUDnUGn5dotG5I5BjiV8wQGE')
-melhor_envio_refresh_token = os.getenv('def50200cc347aa16bbf2326ff0a2b659e52abe511a1bc1d2bb773a9f8363fbdf46e9a1fc2744364fe8869365765829ff04caa4eac5c837302c1dc25a42ea0e7fd3bfd1ea02f9f32fbb4ab80a7cffbb38e1ce8ae1dd61b66ae4396abda49c41c495f8ee6923e70489ebe99418212d3b1a54ae65942123bf38c9949f359936e3245f1e5ef15bb9b09e788ed527f637d92b26fd15c42b39afedda22ee74786551e26aee4ba231785e4204a8c351dca0db528e915f86aa36b2045d6fcd19c77048de2e61a13aee46ce1f4a02c13152aeb634235394823ee3e07f312a85e7a67917583c5e1145c188ce8f2070a5b21f621e57af6af2f6663d5bd3e87816e37cb2866759e880d90219cd3bd255c257e29c7c7433769dd32f87a3157b5e23b855a61663eac8da02d93d59d612818e5a2ab132986632329589788b9492ae77f8288ef4adf38b49fcc29b9a7f9bfbab95c055c14b2b4499c38f8117417ec7b570517862c26f2ddcdf7763ab852872890bad5b226f11d58709941bfbe8dd6635067624c501d31a6e6e49585824dc98e3eff9180b04027d90593afb5b2b6dba088af0f15292a29')
-melhor_envio_client_id = os.getenv('15897')
-melhor_envio_client_secret = os.getenv('ik7qxO9M1iX2uvFYOQd7A3AjjjOPXtJ6vApjPnBt')
-kommo_access_token = os.getenv('eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjU2MDVjYjg4MzEwYWNmN2UwYTQ4OTU0NGJiNTBiZTEwOGQ2MWU5ZWM0NDE3ZDA4NjMzNGRlYjE4M2IxYWJlNjQyNTIyOTc4NjU0YTMwNDA3In0.eyJhdWQiOiJhYmIwOWUyZS03NGVjLTQ1YTAtOWNmZC01YjcyN2UwYTE1MmMiLCJqdGkiOiI1NjA1Y2I4ODMxMGFjZjdlMGE0ODk1NDRiYjUwYmUxMDhkNjFlOWVjNDQxN2QwODYzMzRkZWIxODNiMWFiZTY0MjUyMjk3ODY1NGEzMDQwNyIsImlhdCI6MTcyNTk3NTM3NiwibmJmIjoxNzI1OTc1Mzc2LCJleHAiOjE4ODM2OTI4MDAsInN1YiI6IjEwNDY2MDM1IiwiZ3JhbnRfdHlwZSI6IiIsImFjY291bnRfaWQiOjMyMDYxNDU1LCJiYXNlX2RvbWFpbiI6ImtvbW1vLmNvbSIsInZlcnNpb24iOjIsInNjb3BlcyI6WyJjcm0iLCJmaWxlcyIsImZpbGVzX2RlbGV0ZSIsIm5vdGlmaWNhdGlvbnMiLCJwdXNoX25vdGlmaWNhdGlvbnMiXSwiaGFzaF91dWlkIjoiM2ZlOTZmODktNWNmNy00MzMzLTliZjgtNzJiZjhjYmZlNzhiIiwiYXBpX2RvbWFpbiI6ImFwaS1nLmtvbW1vLmNvbSJ9.W0uaRojDosl08ybbTpyBoewhRdNMuheQiffOoi3IPy527ELDHvlD_FczayFf6VBgWmdnVjC5RqFGX8AjvJOa7k2H-Z0weZsJ-xjgw8Ry-BCVLzpvZePXQVY_gqf7H-o7zXoRwjwa4F7tVcrwTUgsIVA4FKVt7QkjqPKVY_nuVDDbnmhI705UoJtWARC98nWTruWgq9TTKLqCgF4IpDLQ1_OsCoI9aopUuHa_ClXWQlg7Zr4VXYSrjMEnDKs8VVpXlWUfXGIp1TEaDiggvEdRbnHeQcs1gdEAG8iLw35smRd5PlXYo5Pytfc2OGhf9pARduXaHWM28ZCshyG_Qb0jgw')
-kommo_client_id = os.getenv('abb09e2e-74ec-45a0-9cfd-5b727e0a152c')
-kommo_client_secret = os.getenv('m5zQ6pgszoL9Ps7lcdCsTBb4zxzN6Z7fZ4DluRX48Kj2Ixmj4HcHktwc2XHovsJ2')
-
+# Variáveis de tokens do Melhor Envio e Kommo
+melhor_envio_access_token = os.getenv('MELHOR_ENVIO_ACCESS_TOKEN')
+melhor_envio_client_id = os.getenv('MELHOR_ENVIO_CLIENT_ID')
+melhor_envio_client_secret = os.getenv('MELHOR_ENVIO_CLIENT_SECRET')
+kommo_access_token = os.getenv('KOMMO_ACCESS_TOKEN')
 
 # Função para renovar o token de acesso do Melhor Envio
 def refresh_access_token(refresh_token, client_id, client_secret):
@@ -78,15 +73,16 @@ def obter_nomes_ids_clientes():
     if response.status_code == 200:
         contacts = response.json()['_embedded']['contacts']
         clientes = {contact['name']: contact['id'] for contact in contacts}
-        print("Clientes obtidos do Kommo:", clientes)
+        print(f"Clientes obtidos do Kommo: {len(clientes)}")  # Log do número de clientes obtidos
         return clientes
+    elif response.status_code == 401:
+        print(f"Erro ao obter contatos: {response.status_code} - {response.text}")
     else:
         print(f"Erro ao obter contatos: {response.status_code} - {response.text}")
     return {}
 
 # Função para obter todos os pedidos do Melhor Envio
 def obter_todos_pedidos():
-    global melhor_envio_access_token, melhor_envio_refresh_token
     base_url = "https://www.melhorenvio.com.br/api/v2/me/orders"
     headers = {
         "Accept": "application/json",
@@ -102,25 +98,6 @@ def obter_todos_pedidos():
         if response.status_code == 204:
             print(f"Página {pagina}: Sem conteúdo (204).")
             break
-        elif response.status_code == 401:
-            # Tentativa de renovar o token ao receber erro 401 (não autorizado)
-            melhor_envio_access_token, melhor_envio_refresh_token = refresh_access_token(melhor_envio_refresh_token, melhor_envio_client_id, melhor_envio_client_secret)
-            if melhor_envio_access_token:
-                headers['Authorization'] = f'Bearer {melhor_envio_access_token}'
-                response = requests.get(f"{base_url}?page={pagina}", headers=headers)
-                if response.status_code == 200:
-                    dados = response.json()
-                    pedidos = dados.get('data', [])
-                    if not pedidos:
-                        break
-                    todos_pedidos.extend(pedidos)
-                    pagina += 1
-                else:
-                    print(f"Erro ao fazer a requisição após renovação: {response.status_code} - {response.text}")
-                    break
-            else:
-                print("Não foi possível renovar o access token.")
-                break
         elif response.status_code != 200:
             print(f"Erro ao fazer a requisição: {response.status_code}")
             print("Conteúdo da resposta:", response.text)
@@ -133,18 +110,10 @@ def obter_todos_pedidos():
         todos_pedidos.extend(pedidos)
         pagina += 1
 
-    print("Pedidos obtidos do Melhor Envio:", todos_pedidos)
+    print(f"Pedidos obtidos do Melhor Envio: {len(todos_pedidos)}")  # Log do número de pedidos obtidos
     return todos_pedidos
 
-# Função para encontrar o nome mais próximo usando fuzzy matching
-def encontrar_nome_semelhante(nome_cliente_pedido, clientes):
-    nomes_kommo = list(clientes.keys())
-    nome_correspondente, pontuacao = process.extractOne(nome_cliente_pedido, nomes_kommo)
-    if pontuacao > 85:
-        return nome_correspondente
-    return None
-
-# Função para atualizar a planilha com os dados dos clientes e pedidos, evitando duplicatas
+# Função para atualizar a planilha com os dados dos clientes e pedidos
 def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
     lista_pedidos = []
     ids_adicionados = set()
