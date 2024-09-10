@@ -1,34 +1,33 @@
-name: Atualizar Planilha Google Sheets
+name: Atualizar Planilha
 
 on:
-  workflow_dispatch: # Permite iniciar o workflow manualmente
+  workflow_dispatch:
   schedule:
-    - cron: '0 * * * *' # Agendado para rodar diariamente às 6h UTC
+    - cron: '0 * * * *'  # Ajuste o horário conforme necessário para agendamento
 
 jobs:
-  run_script:
+  run-script:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - name: Checkout do repositório
+      uses: actions/checkout@v2
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.12'  # Versão do Python que você está usando
+    - name: Configurar Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'  # Especifique a versão do Python, ex: '3.8'
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt # Certifique-se de ter um requirements.txt com suas dependências
+    - name: Instalar dependências
+      run: |
+        pip install -r requirements.txt
 
-      - name: Run Python script
-        env:
-          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }} # Assegure-se de configurar isso no GitHub Secrets
-          MELHOR_ENVIO_ACCESS_TOKEN: ${{ secrets.MELHOR_ENVIO_ACCESS_TOKEN }}
-          MELHOR_ENVIO_CLIENT_ID: ${{ secrets.MELHOR_ENVIO_CLIENT_ID }}
-          MELHOR_ENVIO_CLIENT_SECRET: ${{ secrets.MELHOR_ENVIO_CLIENT_SECRET }}
-          KOMMO_ACCESS_TOKEN: ${{ secrets.KOMMO_ACCESS_TOKEN }}
-        run: |
-          python CONTROLEMELHORENVIO.py
+    - name: Executar script Python
+      env:
+        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+        MELHOR_ENVIO_ACCESS_TOKEN: ${{ secrets.MELHOR_ENVIO_ACCESS_TOKEN }}
+        MELHOR_ENVIO_CLIENT_ID: ${{ secrets.MELHOR_ENVIO_CLIENT_ID }}
+        MELHOR_ENVIO_CLIENT_SECRET: ${{ secrets.MELHOR_ENVIO_CLIENT_SECRET }}
+        KOMMO_ACCESS_TOKEN: ${{ secrets.KOMMO_ACCESS_TOKEN }}
+      run: |
+        python CONTROLEMELHORENVIO.py
