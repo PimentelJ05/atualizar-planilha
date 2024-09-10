@@ -100,7 +100,7 @@ def obter_todos_pedidos():
 def encontrar_nome_semelhante(nome_cliente_pedido, clientes):
     nomes_kommo = list(clientes.keys())
     nome_correspondente, pontuacao = process.extractOne(normalizar_nome(nome_cliente_pedido), nomes_kommo)
-    if pontuacao > 80:  # Ajuste de sensibilidade para correspondência
+    if pontuacao > 90:  # Ajuste de sensibilidade para correspondência
         return nome_correspondente
     return None
 
