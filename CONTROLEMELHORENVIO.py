@@ -39,7 +39,9 @@ worksheet = spreadsheet.sheet1
 # Variáveis de tokens do Melhor Envio e Kommo
 melhor_envio_access_token = os.getenv('MELHOR_ENVIO_ACCESS_TOKEN').strip()
 kommo_access_token = os.getenv('KOMMO_ACCESS_TOKEN').strip()
-
+melhor_envio_refresh_token = os.getenv('MELHOR_ENVIO_ACCESS_TOKEN').strip()
+melhor_envio_client_id = os.getenv('MELHOR_ENVIO_CLIENT_ID')
+melhor_envio_client_secret = os.getenv('MELHOR_ENVIO_CLIENT_SECRET')
 # Função para normalizar nomes
 def normalizar_nome(nome):
     # Remove acentos, converte para minúsculas, e remove espaços extras
@@ -100,15 +102,17 @@ def obter_todos_pedidos():
     print(f"Pedidos obtidos do Melhor Envio: {len(todos_pedidos)}")
     return todos_pedidos
 
-# Função para encontrar o nome correspondente usando fuzzy matching
+# Função para encontrar o nome correspondente usando fuzzy matching ajustado
 def encontrar_nome_semelhante(nome_cliente_pedido, clientes):
     nome_cliente_normalizado = normalizar_nome(nome_cliente_pedido)
     print(f"Nome do pedido normalizado: '{nome_cliente_normalizado}'")
 
-    # Comparação direta após normalização
+    # Comparação direta após normalização usando uma abordagem mais tolerante com token_sort_ratio
     for nome_kommo, id_cliente in clientes.items():
-        # Usando uma correspondência fuzzy para tolerar pequenas variações
-        if fuzz.ratio(nome_cliente_normalizado, nome_kommo) > 90:
+        # Usando uma correspondência fuzzy token sort ratio para tolerar pequenas variações e ordem
+        pontuacao = fuzz.token_sort_ratio(nome_cliente_normalizado, nome_kommo)
+        print(f"Comparando '{nome_cliente_normalizado}' com '{nome_kommo}' - Pontuação: {pontuacao}")
+        if pontuacao > 80:  # Ajuste o limite conforme necessário
             print(f"Correspondência fuzzy encontrada: '{nome_cliente_normalizado}' -> '{nome_kommo}'")
             return nome_kommo
 
