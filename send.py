@@ -27,6 +27,9 @@ def enviar_mensagem_kommo(numero_cliente, mensagem):
         "message": mensagem
     }
     response = requests.post(url, json=payload, headers=headers)
+    # Adicione logging detalhado
+    print(f"Status Code: {response.status_code}")
+    print(f"Response: {response.text}")
     return response.json()
 
 # Dicionário de tradução de status
