@@ -68,7 +68,6 @@ def refresh_access_token(refresh_token, client_id, client_secret):
 
 # Função para obter os nomes e IDs dos clientes do Kommo
 def obter_nomes_ids_clientes():
-    global kommo_access_token, kommo_refresh_token
     api_url = 'https://creditoessencial.kommo.com/api/v4/contacts'
     headers = {
         'Authorization': f'Bearer {kommo_access_token}'
@@ -81,21 +80,6 @@ def obter_nomes_ids_clientes():
         clientes = {contact['name']: contact['id'] for contact in contacts}
         print("Clientes obtidos do Kommo:", clientes)
         return clientes
-    elif response.status_code == 401:
-        # Tentativa de renovar o token ao receber erro 401 (não autorizado)
-        kommo_access_token, kommo_refresh_token = refresh_access_token(kommo_refresh_token, melhor_envio_client_id, melhor_envio_client_secret)
-        if kommo_access_token:
-            headers['Authorization'] = f'Bearer {kommo_access_token}'
-            response = requests.get(api_url, headers=headers)
-            if response.status_code == 200:
-                contacts = response.json()['_embedded']['contacts']
-                clientes = {contact['name']: contact['id'] for contact in contacts}
-                print("Clientes obtidos do Kommo após renovação:", clientes)
-                return clientes
-            else:
-                print(f"Erro ao obter contatos após renovação: {response.status_code} - {response.text}")
-        else:
-            print("Não foi possível renovar o access token.")
     else:
         print(f"Erro ao obter contatos: {response.status_code} - {response.text}")
     return {}
