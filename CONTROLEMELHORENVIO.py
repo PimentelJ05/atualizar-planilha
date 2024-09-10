@@ -3,7 +3,8 @@ import json
 import requests
 import gspread
 from google.oauth2.service_account import Credentials
-from fuzzywuzzy import process
+from fuzzywuzzy import process, fuzz
+import re
 
 # Lendo as credenciais do Google Sheets do ambiente
 credentials_json = os.environ.get("GOOGLE_CREDENTIALS")
@@ -41,8 +42,10 @@ melhor_envio_client_id = os.getenv('MELHOR_ENVIO_CLIENT_ID')
 melhor_envio_client_secret = os.getenv('MELHOR_ENVIO_CLIENT_SECRET')
 kommo_access_token = os.getenv('KOMMO_ACCESS_TOKEN').strip()
 
-# Função para normalizar nomes
+# Função para normalizar nomes: Remove espaços, converte para minúsculas e remove caracteres especiais
 def normalizar_nome(nome):
+    nome = re.sub(r'\s+', ' ', nome)  # Remove múltiplos espaços
+    nome = re.sub(r'[^\w\s]', '', nome)  # Remove caracteres especiais
     return nome.strip().lower()
 
 # Função para obter os nomes e IDs dos clientes do Kommo
@@ -96,12 +99,20 @@ def obter_todos_pedidos():
     print(f"Pedidos obtidos do Melhor Envio: {len(todos_pedidos)}")
     return todos_pedidos
 
-# Função para encontrar o nome mais próximo usando fuzzy matching
+# Função para encontrar o nome mais próximo usando fuzzy matching com alta precisão
 def encontrar_nome_semelhante(nome_cliente_pedido, clientes):
     nomes_kommo = list(clientes.keys())
-    nome_correspondente, pontuacao = process.extractOne(normalizar_nome(nome_cliente_pedido), nomes_kommo)
-    if pontuacao > 80:  # Ajuste de sensibilidade para correspondência
+    nome_cliente_normalizado = normalizar_nome(nome_cliente_pedido)
+
+    # Usando WRatio para uma correspondência mais robusta
+    nome_correspondente, pontuacao = process.extractOne(nome_cliente_normalizado, nomes_kommo, scorer=fuzz.WRatio)
+    
+    # Se a correspondência for igual ou superior a 90%, retorna o nome correspondente
+    if pontuacao >= 90:
+        print(f"Correspondência encontrada para '{nome_cliente_pedido}': '{nome_correspondente}' com pontuação {pontuacao}.")
         return nome_correspondente
+    
+    print(f"Nenhuma correspondência suficiente encontrada para '{nome_cliente_pedido}' (Pontuação: {pontuacao}).")
     return None
 
 # Função para atualizar a planilha com os dados dos clientes e pedidos
@@ -112,8 +123,12 @@ def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
     for pedido in pedidos:
         nome_cliente_pedido = pedido.get('to', {}).get('name', 'N/A')
         nome_correspondente = encontrar_nome_semelhante(nome_cliente_pedido, clientes)
-        id_cliente = clientes.get(nome_correspondente, 'CLIENT ID NOT FOUND')
+        id_cliente = clientes.get(nome_correspondente, 'CLIENT ID NOT FOUND') if nome_correspondente else 'CLIENT ID NOT FOUND'
         id_pedido = pedido.get('id', 'N/A')
+
+        # Log adicional para ajudar a depurar correspondências não encontradas
+        if id_cliente == 'CLIENT ID NOT FOUND':
+            print(f"ID não encontrado para '{nome_cliente_pedido}' normalizado como '{normalizar_nome(nome_cliente_pedido)}'.")
 
         if id_pedido not in ids_adicionados:
             lista_pedidos.append([
