@@ -36,30 +36,10 @@ spreadsheet = client.open_by_key(planilha_id)
 worksheet = spreadsheet.sheet1
 
 # Variáveis de tokens do Melhor Envio e Kommo
-melhor_envio_access_token = os.getenv('MELHOR_ENVIO_ACCESS_TOKEN')
+melhor_envio_access_token = os.getenv('MELHOR_ENVIO_ACCESS_TOKEN').strip()  # Limpa o token
 melhor_envio_client_id = os.getenv('MELHOR_ENVIO_CLIENT_ID')
 melhor_envio_client_secret = os.getenv('MELHOR_ENVIO_CLIENT_SECRET')
-kommo_access_token = os.getenv('KOMMO_ACCESS_TOKEN')
-
-# Função para renovar o token de acesso do Melhor Envio
-def refresh_access_token(refresh_token, client_id, client_secret):
-    url = 'https://www.melhorenvio.com.br/oauth/token'
-    payload = {
-        'grant_type': 'refresh_token',
-        'refresh_token': refresh_token,
-        'client_id': client_id,
-        'client_secret': client_secret
-    }
-    response = requests.post(url, data=payload)
-    if response.status_code == 200:
-        tokens = response.json()
-        novo_access_token = tokens['access_token']
-        novo_refresh_token = tokens.get('refresh_token', refresh_token)  # Mantém o refresh_token atual se não retornar um novo
-        print("Novo Access Token:", novo_access_token)
-        return novo_access_token, novo_refresh_token
-    else:
-        print("Erro ao renovar tokens:", response.json())
-        return None, None
+kommo_access_token = os.getenv('KOMMO_ACCESS_TOKEN').strip()  # Limpa o token
 
 # Função para obter os nomes e IDs dos clientes do Kommo
 def obter_nomes_ids_clientes():
