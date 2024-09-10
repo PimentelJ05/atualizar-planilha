@@ -36,10 +36,10 @@ spreadsheet = client.open_by_key(planilha_id)
 worksheet = spreadsheet.sheet1
 
 # Variáveis de tokens do Melhor Envio e Kommo
-melhor_envio_access_token = os.getenv('MELHOR_ENVIO_ACCESS_TOKEN').strip()  # Limpa o token
+melhor_envio_access_token = os.getenv('MELHOR_ENVIO_ACCESS_TOKEN').strip()
 melhor_envio_client_id = os.getenv('MELHOR_ENVIO_CLIENT_ID')
 melhor_envio_client_secret = os.getenv('MELHOR_ENVIO_CLIENT_SECRET')
-kommo_access_token = os.getenv('KOMMO_ACCESS_TOKEN').strip()  # Limpa o token
+kommo_access_token = os.getenv('KOMMO_ACCESS_TOKEN').strip()
 
 # Função para obter os nomes e IDs dos clientes do Kommo
 def obter_nomes_ids_clientes():
@@ -53,7 +53,7 @@ def obter_nomes_ids_clientes():
     if response.status_code == 200:
         contacts = response.json()['_embedded']['contacts']
         clientes = {contact['name']: contact['id'] for contact in contacts}
-        print(f"Clientes obtidos do Kommo: {len(clientes)}")  # Log do número de clientes obtidos
+        print(f"Clientes obtidos do Kommo: {len(clientes)}")
         return clientes
     elif response.status_code == 401:
         print(f"Erro ao obter contatos: {response.status_code} - {response.text}")
@@ -90,8 +90,16 @@ def obter_todos_pedidos():
         todos_pedidos.extend(pedidos)
         pagina += 1
 
-    print(f"Pedidos obtidos do Melhor Envio: {len(todos_pedidos)}")  # Log do número de pedidos obtidos
+    print(f"Pedidos obtidos do Melhor Envio: {len(todos_pedidos)}")
     return todos_pedidos
+
+# Função para encontrar o nome mais próximo usando fuzzy matching
+def encontrar_nome_semelhante(nome_cliente_pedido, clientes):
+    nomes_kommo = list(clientes.keys())
+    nome_correspondente, pontuacao = process.extractOne(nome_cliente_pedido, nomes_kommo)
+    if pontuacao > 85:
+        return nome_correspondente
+    return None
 
 # Função para atualizar a planilha com os dados dos clientes e pedidos
 def atualizar_planilha_google_sheets(pedidos, clientes, worksheet):
