@@ -28,4 +28,4 @@ jobs:
         GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
         KOMMO_API_TOKEN: ${{ secrets.KOMMO_API_TOKEN }}
       run: |
-        python enviar_mensagens.py
+        python send.py
