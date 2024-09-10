@@ -28,19 +28,11 @@ credenciais = Credentials.from_service_account_info(credentials_info, scopes=sco
 # Autenticando no Google Sheets
 client = gspread.authorize(credenciais)
 
-# Função para criar uma nova planilha
-def criar_nova_planilha(client, nome_da_planilha):
-    nova_planilha = client.create(nome_da_planilha)  # Cria uma nova planilha
-    nova_planilha.share('julia.pimentel@creditoessencial.com.br', perm_type='user', role='writer')
-    nova_planilha.share('mateus.silva@creditoessencial.com.br', perm_type='user', role='writer')
-    print(f"Nova planilha criada com sucesso! ID: {nova_planilha.id}")
-    return nova_planilha.id
+# ID da planilha fornecida
+planilha_id = '1mRNwU-h9EUxYmtG8WNfDLMI8fqWviKGYEERD4k5aegY'
 
-# Criação de uma nova planilha e obtenção de seu ID
-novo_planilha_id = criar_nova_planilha(client, 'Controle Melhor Envio')
-
-# Acessar a nova planilha usando o novo ID
-spreadsheet = client.open_by_key(novo_planilha_id)
+# Acessar a planilha usando o ID fornecido
+spreadsheet = client.open_by_key(planilha_id)
 worksheet = spreadsheet.sheet1
 
 # Variáveis de tokens do Melhor Envio
@@ -195,6 +187,6 @@ pedidos = obter_todos_pedidos()
 
 if pedidos and clientes:
     atualizar_planilha_google_sheets(pedidos, clientes, worksheet)
-    print(f"Planilha '{spreadsheet.title}' atualizada com sucesso! ID: {novo_planilha_id}")
+    print(f"Planilha '{spreadsheet.title}' atualizada com sucesso! ID: {planilha_id}")
 else:
     print("Nenhum pedido ou cliente encontrado para salvar.")
