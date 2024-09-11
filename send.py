@@ -11,7 +11,7 @@ if not credentials_json:
 credentials_info = json.loads(credentials_json)
 scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 credenciais = Credentials.from_service_account_info(credentials_info, scopes=scopes)
-kommo_leads_token = os.getenv('KOMMO_LEADS_TOKEN').strip()
+kommo_leads_token = os.getenv('KOMMO_LEADS_TOKEN')
 
 # Autenticando no Google Sheets
 client = gspread.authorize(credenciais)
