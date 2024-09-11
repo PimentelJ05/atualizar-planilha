@@ -3,6 +3,7 @@ import json
 import requests
 import gspread
 from google.oauth2.service_account import Credentials
+import re
 
 # Lendo as credenciais do Google Sheets do ambiente
 credentials_json = os.environ.get("GOOGLE_CREDENTIALS")
@@ -73,6 +74,45 @@ def obter_todos_pedidos():
     print(f"Pedidos obtidos do Melhor Envio: {len(todos_pedidos)}")
     return todos_pedidos
 
+# Função para padronizar o número de telefone
+def padronizar_telefone(telefone):
+    # Remove caracteres não numéricos
+    telefone = re.sub(r'\D', '', telefone)
+    # Adiciona o código de país +55 se faltar e o número tiver 10 ou 11 dígitos
+    if telefone.startswith('0'):
+        telefone = telefone[1:]
+    if len(telefone) == 10 or len(telefone) == 11:
+        telefone = '+55' + telefone
+    elif len(telefone) == 13 and telefone.startswith('55'):
+        telefone = '+' + telefone
+    elif len(telefone) == 12 and not telefone.startswith('+'):
+        telefone = '+' + telefone
+    return telefone
+
+# Função para buscar o cliente no Kommo usando o número de telefone padronizado
+def buscar_cliente_kommo_por_telefone(telefone):
+    telefone_padronizado = padronizar_telefone(telefone)
+    url = "https://creditoessencial.kommo.com/api/v4/contacts"  # Ajuste o subdomínio conforme necessário
+    headers = {
+        "Authorization": f"Bearer {kommo_access_token}",
+        "Content-Type": "application/json"
+    }
+    params = {
+        "query": telefone_padronizado
+    }
+    response = requests.get(url, headers=headers, params=params)
+
+    if response.status_code == 200:
+        data = response.json()
+        if '_embedded' in data and 'contacts' in data['_embedded']:
+            contatos = data['_embedded']['contacts']
+            if contatos:
+                return contatos[0].get('id')  # Retorna o primeiro ID de contato encontrado
+    else:
+        print(f"Erro ao buscar cliente no Kommo: {response.status_code}, {response.text}")
+
+    return None
+
 # Função para atualizar a planilha com os dados dos clientes e pedidos
 def atualizar_planilha_google_sheets(pedidos, worksheet):
     lista_pedidos = []
@@ -81,16 +121,20 @@ def atualizar_planilha_google_sheets(pedidos, worksheet):
     for pedido in pedidos:
         nome_cliente_pedido = pedido.get('to', {}).get('name', 'N/A')
         id_pedido = pedido.get('id', 'N/A')
+        telefone_cliente = pedido.get('to', {}).get('phone', 'N/A')
 
-        # Montando os dados da linha com ID do Cliente em branco
+        # Buscar o ID do cliente no Kommo usando o número de telefone
+        id_cliente_kommo = buscar_cliente_kommo_por_telefone(telefone_cliente)
+
+        # Montando os dados da linha com o ID do Cliente encontrado ou em branco se não encontrado
         linha = [
-            '',  # Coluna "ID do Cliente" em branco para edição manual
+            id_cliente_kommo if id_cliente_kommo else '',  # Coluna "ID do Cliente"
             nome_cliente_pedido,
             id_pedido,
             pedido.get('status', 'N/A'),
             pedido.get('service', {}).get('company', {}).get('name', 'N/A'),
             pedido.get('updated_at', 'N/A'),
-            pedido.get('to', {}).get('phone', 'N/A')
+            telefone_cliente
         ]
 
         if id_pedido not in ids_adicionados:
