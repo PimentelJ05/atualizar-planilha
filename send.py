@@ -19,7 +19,7 @@ worksheet = client.open_by_key(planilha_id).sheet1
 
 # Função para buscar lead no Kommo usando o número de telefone
 def buscar_lead_kommo(numero_telefone):
-    url = "https://creditoessencial.amocrm.com/api/v4/leads"
+    url = "https://creditoessencial.kommo.com/api/v4/leads"
     headers = {
         "Authorization": f"Bearer {os.getenv('KOMMO_ACCESS_TOKEN')}",
         "Content-Type": "application/json"
