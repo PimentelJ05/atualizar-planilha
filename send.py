@@ -11,6 +11,7 @@ if not credentials_json:
 credentials_info = json.loads(credentials_json)
 scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 credenciais = Credentials.from_service_account_info(credentials_info, scopes=scopes)
+kommo_leads_token = os.getenv('KOMMO_LEADS_TOKEN').strip()
 
 # Autenticando no Google Sheets
 client = gspread.authorize(credenciais)
@@ -21,7 +22,7 @@ worksheet = client.open_by_key(planilha_id).sheet1
 def buscar_lead_kommo(numero_telefone):
     url = "https://creditoessencial.kommo.com/api/v4/leads"
     headers = {
-        "Authorization": f"Bearer {os.getenv('KOMMO_ACCESS_TOKEN')}",
+        "Authorization": f"Bearer {os.getenv('KOMMO_LEADS_TOKEN')}",
         "Content-Type": "application/json"
     }
     params = {'query': numero_telefone}
@@ -37,7 +38,7 @@ def buscar_lead_kommo(numero_telefone):
 def atualizar_lead_kommo(lead_id, novo_status_id):
     url = f"https://creditoessencial.kommo.com/api/v4/leads/{lead_id}"
     headers = {
-        "Authorization": f"Bearer {os.getenv('KOMMO_ACCESS_TOKEN')}",
+        "Authorization": f"Bearer {os.getenv('KOMMO_LEADS_TOKEN')}",
         "Content-Type": "application/json"
     }
     data = {"status_id": novo_status_id}
