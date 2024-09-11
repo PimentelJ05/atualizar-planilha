@@ -24,6 +24,6 @@ jobs:
     - name: Run script
       env:
         GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-        KOMMO_API_TOKEN: ${{ secrets.KOMMO_API_TOKEN }}
+        KOMMO_API_TOKEN: ${{ secrets.KOMMO_ACCESS_TOKEN }}
       run: |
         python send.py
