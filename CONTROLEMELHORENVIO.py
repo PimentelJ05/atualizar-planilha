@@ -40,17 +40,6 @@ melhor_envio_client_id = os.getenv('MELHOR_ENVIO_CLIENT_ID')
 melhor_envio_client_secret = os.getenv('MELHOR_ENVIO_CLIENT_SECRET')
 kommo_access_token = os.getenv('KOMMO_ACCESS_TOKEN').strip()
 
-# Dicionário de tradução dos status
-status_traducao = {
-    "received": "Entregue",
-    "processing": "Em processamento",
-    "shipped": "Enviado",
-    "delivered": "Entregue",
-    "pending": "Pendente",
-    "canceled": "Cancelado",
-    "returned": "Devolvido",
-    "failed": "Falhou"
-}
 
 # Função para obter todos os pedidos do Melhor Envio
 def obter_todos_pedidos():
@@ -84,10 +73,6 @@ def obter_todos_pedidos():
     print(f"Pedidos obtidos do Melhor Envio: {len(todos_pedidos)}")
     return todos_pedidos
 
-# Função para traduzir o status usando o dicionário de tradução
-def traduzir_status(status):
-    return status_traducao.get(status.lower(), status)
-
 # Função para atualizar a planilha com os dados dos clientes e pedidos
 def atualizar_planilha_google_sheets(pedidos, worksheet):
     lista_pedidos = []
@@ -96,14 +81,13 @@ def atualizar_planilha_google_sheets(pedidos, worksheet):
     for pedido in pedidos:
         nome_cliente_pedido = pedido.get('to', {}).get('name', 'N/A')
         id_pedido = pedido.get('id', 'N/A')
-        status_pedido = traduzir_status(pedido.get('status', 'N/A'))  # Traduzindo o status
 
         # Montando os dados da linha com ID do Cliente em branco
         linha = [
             '',  # Coluna "ID do Cliente" em branco para edição manual
             nome_cliente_pedido,
             id_pedido,
-            status_pedido,
+            pedido.get('status', 'N/A'),
             pedido.get('service', {}).get('company', {}).get('name', 'N/A'),
             pedido.get('updated_at', 'N/A'),
             pedido.get('to', {}).get('phone', 'N/A')
