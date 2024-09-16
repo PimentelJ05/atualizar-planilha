@@ -2,7 +2,7 @@ name: processar-planilha
 
 on:
   schedule:
-    - cron: '0 * * * *'  # Executa a cada hora
+      # Executa a cada hora
   workflow_dispatch:  # Permite execução manual
 
 jobs:
