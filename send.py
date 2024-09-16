@@ -1,8 +1,8 @@
 import os
 import json
-from google.oauth2.service_account import Credentials
-from googleapiclient.discovery import build
 import requests
+import gspread
+from google.oauth2.service_account import Credentials
 
 # Configurações da Google Sheets API
 SPREADSHEET_ID = '1mRNwU-h9EUxYmtG8WNfDLMI8fqWviKGYEERD4k5aegY'  # ID da sua planilha
