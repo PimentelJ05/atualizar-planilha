@@ -1,75 +1,64 @@
 import os
 import json
-import requests
-import gspread
 from google.oauth2.service_account import Credentials
+from googleapiclient.discovery import build
+import requests
 
-# Lendo as credenciais do Google Sheets
-credentials_json = os.environ.get("GOOGLE_CREDENTIALS")
-if not credentials_json:
-    raise ValueError("As credenciais do Google não foram encontradas. Verifique a variável de ambiente 'GOOGLE_CREDENTIALS'.")
-credentials_info = json.loads(credentials_json)
-scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-credenciais = Credentials.from_service_account_info(credentials_info, scopes=scopes)
-kommo_leads_token = os.getenv('KOMMO_LEADS_TOKEN')
+# Configurações da Google Sheets API
+SPREADSHEET_ID = '1mRNwU-h9EUxYmtG8WNfDLMI8fqWviKGYEERD4k5aegY'  # ID da sua planilha
+RANGE_NAME = 'Sheet1!A:G'  # Ajuste o nome da aba e o intervalo conforme necessário
 
-# Autenticando no Google Sheets
-client = gspread.authorize(credenciais)
-planilha_id = '1mRNwU-h9EUxYmtG8WNfDLMI8fqWviKGYEERD4k5aegY'
-worksheet = client.open_by_key(planilha_id).sheet1
+# Configurações da API do Kommo
+KOMMO_API_URL = 'https://creditoessencial.kommo.com/api/v4/chats/messages'
+KOMMO_TOKEN = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjhkYmQxOTlmZTE0ZTIzMDA5ZGFhZmQ5YWNhNWZiMjU4MjU0ZjNkNmIwYTExNTlkY2UyMTI1ZWQ5ZmU3MTY0ZTM2ODVhNDEzODUzMGUxZjllIn0.eyJhdWQiOiIzMWU5ZjgzNy1jOTlhLTQ5YTUtOGFkYS1mNzEwMmJiNmMzYzciLCJqdGkiOiI4ZGJkMTk5ZmUxNGUyMzAwOWRhYWZkOWFjYTVmYjI1ODI1NGYzZDZiMGExMTU5ZGNlMjEyNWVkOWZlNzE2NGUzNjg1YTQxMzg1MzBlMWY5ZSIsImlhdCI6MTcyNjIzNDg2NCwibmJmIjoxNzI2MjM0ODY0LCJleHAiOjE3MjYzMjEyNjQsInN1YiI6IjEwNDY2MDM1IiwiZ3JhbnRfdHlwZSI6IiIsImFjY291bnRfaWQiOjMyMDYxNDU1LCJiYXNlX2RvbWFpbiI6ImtvbW1vLmNvbSIsInZlcnNpb24iOjIsInNjb3BlcyI6WyJwdXNoX25vdGlmaWNhdGlvbnMiLCJmaWxlcyIsImNybSIsImZpbGVzX2RlbGV0ZSIsIm5vdGlmaWNhdGlvbnMiXSwiaGFzaF91dWlkIjoiMmQ1ODUzYjMtZGY2Ni00ZDgyLWExMGYtNDUwNDZjMDM3M2EwIiwiYXBpX2RvbWFpbiI6ImFwaS1nLmtvbW1vLmNvbSJ9.pzq1_nGT9y-pmbKXT5SMDWMmPs4x5GXq55fDVE3nsHjf8TlFt_w2XcUrQu5raezgH3vDYFM3LgMP79o6fLT7PPOKxbg7ilXTfuYmGfLKZgrzvqiwMyENaTIf_pT2x5iKvumc0gxaJyGWMM-U4y8HdQI6gptEf_NZoOrZP-WOpjeTfRJX-i2bX4LVaYKZMd0YBxFArRX9qOeKYL2B8AWXa70_TC_InnHVpK7R26CWgZlh77I2n_uzB9U-fOPgrH1LOsggNvK9hxXqWkk-Izzxdms_xmGROZ-QcWiYtQlZKi35vz_Aj7SkJTdpp-LIDcA0N9FiKnVImThsOpN1-ux_pQ'  # Substitua pelo seu token de API do Kommo
 
-# Função para buscar lead no Kommo usando o número de telefone
-def buscar_lead_kommo(numero_telefone):
-    url = "https://creditoessencial.kommo.com/api/v4/leads"
+# Função para acessar os dados da planilha
+def acessar_planilha():
+    # Carrega as credenciais do GitHub Secrets
+    google_credentials = json.loads(os.getenv('GOOGLE_CREDENTIALS'))
+    
+    # Autenticação usando credenciais de serviço a partir do JSON das credenciais
+    creds = Credentials.from_service_account_info(google_credentials)
+    service = build('sheets', 'v4', credentials=creds)
+
+    # Chama a API do Google Sheets
+    sheet = service.spreadsheets()
+    result = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range=RANGE_NAME).execute()
+    values = result.get('values', [])
+
+    return values
+
+# Função para enviar mensagem via Kommo
+def enviar_mensagem_kommo(telefone_cliente, mensagem):
     headers = {
-        "Authorization": f"Bearer {kommo_leads_token}",
-        "Content-Type": "application/json"
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {KOMMO_TOKEN}'
     }
-    params = {'query': numero_telefone}
-    response = requests.get(url, headers=headers, params=params)
-    if response.status_code == 200:
-        leads = response.json().get('_embedded', {}).get('leads', [])
-        if leads:
-            return leads[0]  # Retorna o primeiro lead encontrado
-    print(f"Erro ao buscar lead: {response.status_code} - {response.text}")
-    return None
+    payload = {
+        'contact': {
+            'phone': telefone_cliente
+        },
+        'text': mensagem
+    }
 
-# Função para atualizar o lead no Kommo
-def atualizar_lead_kommo(lead_id, pipeline_id, novo_status_id):
-    url = f"https://creditoessencial.kommo.com/api/v4/leads/{lead_id}"
-    headers = {
-        "Authorization": f"Bearer {kommo_leads_token}",
-        "Content-Type": "application/json"
-    }
-    data = {
-        "pipeline_id": pipeline_id,
-        "status_id": novo_status_id
-    }
-    response = requests.patch(url, headers=headers, json=data)
+    response = requests.post(KOMMO_API_URL, json=payload, headers=headers)
+
     if response.status_code == 200:
-        print(f"Lead {lead_id} atualizado com sucesso para o pipeline {pipeline_id} e status {novo_status_id}.")
+        print(f'Mensagem enviada para {telefone_cliente}: {mensagem}')
     else:
-        print(f"Erro ao atualizar lead: {response.status_code} - {response.text}")
+        print(f'Erro ao enviar mensagem para {telefone_cliente}: {response.status_code} - {response.text}')
 
-# Função para monitorar mudanças na planilha e atualizar leads no Kommo
-def monitorar_mudancas_planilha():
-    rows = worksheet.get_all_records()
-    for row in rows:
-        status_atual = row['Status do Pedido']
-        telefone_cliente = row['Telefone do Cliente']
-        lead = buscar_lead_kommo(telefone_cliente)
-        if lead:
-            pipeline_id = 9423092  # ID do funil específico
-            # Mapeamento de status do pedido para IDs de status no Kommo
-            if status_atual == 'posted':
-                novo_status_id = 72892352  # Status ID para 'posted'
-            elif status_atual == 'delivered':
-                novo_status_id = 72892360  # Status ID para 'delivered'
-            elif status_atual == 'received':
-                novo_status_id = 72892356  # Status ID para 'received'
-            else:
-                continue  # Ignora se o status não for um dos especificados
-            atualizar_lead_kommo(lead['id'], pipeline_id, novo_status_id)
+# Função principal para monitorar mudanças e enviar mensagens
+def monitorar_mudancas():
+    dados = acessar_planilha()
 
-# Chame a função de monitoramento
-monitorar_mudancas_planilha()
+    # Exemplo de lógica para verificar mudanças e enviar mensagens
+    for linha in dados:
+        id_cliente, nome_cliente, id_pedido, status_pedido, transportadora, data_atualizacao, telefone_cliente = linha
+        
+        # Lógica para detectar mudança de status e enviar mensagem
+        mensagem = f'Olá {nome_cliente}, o status do seu pedido mudou para: {status_pedido}.'
+        enviar_mensagem_kommo(telefone_cliente, mensagem)
+
+if __name__ == '__main__':
+    monitorar_mudancas()
